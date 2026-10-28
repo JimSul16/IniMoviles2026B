@@ -35,7 +35,7 @@
 
 | Decisión | Elección | Motivo (con evidencia) |
 |---|---|---|
-| **API de oficina (recurso `incidencias`)** | **MockAPI** → `https://<proyecto>.mockapi.io/api/v1/incidencias` (cuenta gratuita del estudiante: 1 proyecto / 2 recursos, sin tarjeta) | Única opción **sin backend propio** que cumple a la vez las **tres** exigencias del PDF: **paginación remota real** (`?page=&limit=` + cabecera `X-Total-Count`), **persistencia real** de POST/PATCH (lo que registra el inspector se lee después) y **CORS** desde `http://localhost:4200`. Además su campo **File** guarda la foto y devuelve una **URL pública permanente**, cumplendo "no basta una ruta temporal del dispositivo". La URL base vive en `src/environments/` (no es secreto; la cuota sí se respeta) |
+| **API de oficina (recurso `incidencias`)** | **MockAPI** → `https://6ae2831abbb541292299fd5e.mockapi.io/API` (cuenta gratuita del estudiante: 1 proyecto / 2 recursos, sin tarjeta). **El recurso se llama `API`**: el plan gratuito no permite renombrarlo tras crearlo, y crear otro solo para el nombre no compensa. Se documenta como decisión en el README; el PDF pide "como mínimo el recurso incidencias" y ese rol lo cumple este recurso | Única opción **sin backend propio** que cumple a la vez las **tres** exigencias del PDF: **paginación remota real** (`?page=&limit=`), **persistencia real** de POST/PATCH (verificado en vivo: `201` y `PATCH 200`) y **CORS** (`ACAO: *` verificado). La foto viaja en **base64 dentro del campo `foto`**, cumpliendo "no basta una ruta temporal del dispositivo" |
 | **API de clima** | **Open-Meteo** → `https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&current=temperature_2m,precipitation,weather_code&timezone=auto` | Verificado con HTTP 200 + `Access-Control-Allow-Origin: *` + sin clave. Devuelve `current.temperature_2m`, `current.precipitation` (**mm de la hora en curso**, exactamente la "precipitación de la última hora" de R4) y `current.weather_code` (código WMO que traducimos a texto en español) |
 | **Código de la incidencia** | `INC-<id autoincremental>` (el `id` de MockAPI) | Identificador único, sin duplicados y sirve de clave para seguimiento y detalle |
 | **Descartada: JSONPlaceholder** | `?_page=&_limit=` + `X-Total-Count` | Pagina bien, CORS ok, pero el **POST no persiste** (201 falso) → R5/R9 imposibles |
@@ -49,14 +49,15 @@
 | **Dependencias adicionales** | ninguna salvo las imprescindibles (Capacitor Camera / Geolocation / Preferences) | el PDF exige justificar cada una por requisito |
 | **Tiempo** | El estudiante confirmó que su defensa **no** es la del 28/10 a las 14:00 | Se trabaja con calidad completa: un requisito por fase, sin saltarnos validaciones |
 
-### 0.2 Reglas de la API que NO se rompen (trampas de MockAPI)
+### 0.2 Reglas de la API que NO se rompen (trampas de MockAPI, **verificadas en vivo el 28/10**)
 
-1. **Fin real de datos**: `offset + recibidos >= Number(X-Total-Count)`. **Nunca** se simula el fin repitiendo la petición: MockAPI responde 200 con `[]` y eso también pasa en la mitad de los datos.
-2. `X-Total-Count` va en la **cabecera**, no en el body → leer `response.headers.get('X-Total-Count')`.
-3. El nombre del recurso se añade **al final de la URL**: un recurso mal escrito devuelve **404**, y 404 en el listado **no** es caída de red (§3.10).
-4. Plan gratis con **cuota por hora**: `PAGE_SIZE = 10` y **debounce ≥ 400 ms**; la siembra de datos también consume cuota (se hace una sola vez desde infraestructura).
-5. La foto se sube en **multipart** al campo `File` y la API devuelve una **URL** que hay que guardar en el campo `foto` del registro.
-6. El registro de MockAPI **no admite campos desconocidos**: si el esquema no tiene `observacion`, el campo se pierde en silencio → el recurso se crea **con todos los campos del modelo** desde el principio.
+1. **NO hay cabecera `X-Total-Count`** (se comprobó con datos reales: no aparece nunca). El **fin real de datos** se calcula con el tamaño de la página: `hasMore = items.length === PAGE_SIZE`. **Nunca** se simula el fin repitiendo la petición ni contando peticiones fallidas: MockAPI devuelve `200` con `[]` tanto en "no hay más" como en "página fuera de rango".
+2. **Paginación verificada**: `GET /API?page=1..3&limit=10` → 10, 10 y 6 registros; `page=4` → `[]`. Si una página viene **corta** (`< PAGE_SIZE`) ya no se pide más.
+3. El recurso se añade **al final del host** (`…/API`): un nombre mal escrito devuelve `404`, y 404 en el listado **no** es caída de red (§3.10) — se distingue con `HttpClient` (error de red) vs `status === 404` (recurso inexistente).
+4. **El plan gratuito no tiene campo tipo File**: la foto se guarda en **base64 dentro del campo `foto`** (`data:image/jpeg;base64,…`) y por eso se **comprime a ≤ 70 KB** en el dispositivo (se midio el límite real del servicio: 80 KB de base64 entra con `201`, 117 KB devuelve **`413 Payload Too Large`**).
+5. **Identificador**: el campo se llama `id` (renombrado a mano en el panel; venía como `Number`). `GET/PATCH/DELETE /API/:id` funciona → `INC-<id>` es el código que ve el inspector.
+6. Plan gratis con **cuota por hora** (los POST de la siembra la consumen): `PAGE_SIZE = 10`, **debounce ≥ 400 ms** y la siembra se hace **una sola vez** desde infraestructura con `scripts/sembrar-incidencias.mjs` (26 registros → 3 páginas).
+7. El recurso **ignora los campos que no existen en su esquema**: si falta `observacion` en el panel, el valor se pierde en silencio. El esquema tiene los **11 campos** del modelo de `src/app/models/incidencia.model.ts`.
 
 ---
 
@@ -165,8 +166,8 @@ Esto es lo que nos costó trabajo la vez pasada. Casi todo el PDF de la activida
 
 | Fase | Req. | Responsable | Estado |
 |---|---|---|---|
-| A — PDF + plan + verificación de APIs | — | 🟦 MiMo | 🟡 `PLAN.md` listo, APIs verificadas; **pendiente la URL de MockAPI del estudiante** |
-| B — Scaffold + estructura + rutas + deps + siembra de datos | base | 🟦 MiMo | ⬜ |
+| A — PDF + plan + verificación de APIs | — | 🟦 MiMo | ✅ `259de6c` — plan completo y APIs verificadas en vivo |
+| B — Scaffold + estructura + rutas + deps + siembra de datos | base | 🟦 MiMo | ✅ BUILD verde · 26 incidencias sembradas |
 | C — Listado de incidencias (8 campos, vacío, error) | R2 | 🟪 Gemini | ⬜ |
 | D — Paginación remota e incremental | R3 | 🟪 Gemini | ⬜ |
 | E — Detalle + transiciones de estado + observación | R9 | 🟪 Gemini | ⬜ |

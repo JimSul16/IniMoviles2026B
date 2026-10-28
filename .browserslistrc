@@ -1,0 +1,11 @@
+# Rango de navegadores soportados por Angular 22 (la versión mínima del starter
+# incluía Chrome 107 / Safari 16 y Angular 22 ya los ha retirado: salía un aviso
+# en cada build y en `ng test`). La app corre en el WebView de Android (Chrome
+# reciente) y en navegadores actuales, así que se sube el mínimo.
+# Comprueba la lista resultante con: npx browserslist
+
+Chrome >=120
+Firefox >=120
+Edge >=120
+Safari >=17
+iOS >=17

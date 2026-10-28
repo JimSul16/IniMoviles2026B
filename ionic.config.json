@@ -1,0 +1,7 @@
+{
+  "name": "urbaninspect",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

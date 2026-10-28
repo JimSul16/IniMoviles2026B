@@ -11,12 +11,12 @@
 | Campo | Valor |
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
-| **Responsable ahora** | 🟦 MiMo (`mimo-infra`) — fase B |
-| **Fase actual** | B — scaffold + estructura + rutas + deps + siembra |
-| **BUILD** | — (aún no existe el proyecto Angular) |
-| **Commits** | `61cf40e` · `1e09bba` · `fase-A: …` |
-| **🚦 Señal** | `FASE-A: commiteado — esperando crear el recurso incidencias en MockAPI` |
-| **Errores conocidos** | `GET …/incidencias` → **404**: el recurso **aún no está creado** en el panel de MockAPI (el proyecto sí existe y su CORS responde `ACAO: *`). El estudiante debe añadir el recurso `incidencias` con los 11 campos de `PLAN.md` §0 |
+| **Responsable ahora** | 🟪 **`gemini-ui`** — fase C (R2: listado de incidencias) |
+| **Fase actual** | C — listado con los 8 campos, estados vacío y error |
+| **BUILD** | ✅ **verde** — `npm run build` · `tsc` app+spec · `npm run lint` · `test:unit` 1/1 · `test:e2e` 2/2 |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (fase A) · `fase-B: …` |
+| **🚦 Señal** | `SCAFFOLD: listo — puede empezar gemini-ui` |
+| **Errores conocidos** | · El recurso de MockAPI se llama **`API`** (no se pudo renombrar) → la URL vive en `environment.ts`; ver `PLAN.md` §0.1/§0.2 · **No existe `X-Total-Count`**: el fin real es `items.length === PAGE_SIZE` · límite de payload ≈100 KB (foto ≤ 70 KB base64) |
 
 ---
 
@@ -70,6 +70,41 @@ Decisiones a respetar:
   · Favoritos (R1) y borrador (R8): solo en @capacitor/preferences, nunca en la API.
 BUILD: no aplica (fase de plan; aún no hay proyecto Angular).
 Errores conocidos: recurso `incidencias` → 404 hasta que se cree en el panel de MockAPI.
+```
+
+---
+
+## Bloque #3 — 🟦 MiMo (fase B cerrada: scaffold + API viva + siembra)
+
+```
+Fase completada: B — scaffold + estructura + rutas + dependencias + siembra.
+Hecho:
+  · Proyecto Ionic 9 + Angular 22 (zoneless) + Capacitor 8 creado con `ionic start`
+    en temporal y movido a la raíz. Identidad: appId ec.edu.epn.esfot.urbaninspect / appName UrbanInspect.
+  · Estructura: src/app/{models,pages,components} · app.config.ts (provideHttpClient(withFetch())) ·
+    app.routes.ts con las 5 páginas standalone y loadComponent (inicio, incidencias, seguimiento,
+    incidencia/:id, registro) · environments con la URL de MockAPI, Open-Meteo y pageSize 10.
+  · Modelo compartido `models/incidencia.model.ts` (contrato para 🟪): Incidencia, TIPOS/ESTADOS/
+    PRIORIDADES con valor+etiqueta+icono, `codigoDe()` → INC-<id>, `SIGUIENTE_ESTADO` (R9),
+    `prioridadExigeFoto()` (R5) y `esBache()` (R7).
+  · Deps justificadas por requisito: @capacitor/preferences (R1/R8), @capacitor/camera (R6),
+    @capacitor/geolocation (R7) + @capacitor/android. Plataforma android/ añadida (7 plugins detectados).
+  · API viva verificada en vivo contra el proyecto del estudiante:
+      POST 201 · PATCH 200 · DELETE 200 · CORS ACAO:* · paginación page=1..3 (10/10/6) y page=4 → [].
+      SIN cabecera X-Total-Count → el fin real es `items.length === PAGE_SIZE` (§0.2.1).
+      Límite de payload medido: 80 KB de base64 entra, 117 KB → 413. Foto ≤ 70 KB.
+  · Siembra: `scripts/sembrar-incidencias.mjs` (sin dependencias, genera PNG de pocos KB con zlib)
+    → 26 incidencias de sectores reales de Quito, los 3 estados, 3 prioridades, 5 tipos, 17 con foto.
+  · Ajustes: .browserslistrc subido a Chrome/Firefox/Edge 120 + Safari 17 (Angular 22 ya no soportaba
+    el rango del starter); e2e actualizado a la app real (2 specs) y chromium instalado.
+Siguiente: 🟪 fase C (R2) — crear `src/app/services/` (todavía NO existe, es suyo) y el listado.
+Decisiones a respetar:
+  · Todo el HTTP vive en servicios de src/app/services/; ninguna página hace fetch.
+  · El recurso de MockAPI se llama `API` (no se pudo renombrar); la URL SOLO cambia en environments.
+  · Fin de paginación por tamaño de página, jamás por X-Total-Count ni repitiendo la petición.
+  · Las fotos son base64 dentro del campo `foto` y se comprimen a ≤ 70 KB antes de enviarse.
+BUILD: verde (build · tsc app+spec · lint --max-warnings 0 · vitest 1/1 · playwright 2/2).
+Errores conocidos: ninguno. Cuota horaria de MockAPI: si aparece 429, esperar a la ventana siguiente.
 ```
 
 ---
