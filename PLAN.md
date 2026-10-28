@@ -92,6 +92,22 @@
 3. Escribe tu bloque en `HANDOFF.md`.
 4. Commit atómico por fase.
 
+### 2.3 Dos programas, una carpeta (Antigravity + OpenCode a la vez)
+
+Ambos se abren sobre **el mismo árbol**, así que además de las reglas anteriores:
+
+1. **El turno lo marca una sola cosa: la fila 🚦 de `HANDOFF.md`.** Es el "candado" del equipo:
+   quien va a escribir **primero la actualiza con su nombre**; quien la lea y no sea su turno, espera.
+2. **Git solo lo toca el turno activo**: si ves `.git/index.lock`, commits ajenos sin pushear o el
+   remote desfasado, no fuerces — espera a que el otro cierre su commit (`--force` prohibido).
+3. **Un solo `npm install`/`npm run build` a la vez**: los dos escriben en `node_modules/` y `dist/`.
+4. **Nunca los dos editores a la vez en la misma fase.** Si Gemini está programando en Antigravity,
+   OpenCode puede *revisar* (DeepSeek, solo lectura) pero no escribe, y viceversa.
+5. **Un solo push por fase**, después del commit del turno activo.
+
+> `AGENTS.md` en la raíz duplica estas reglas para **Antigravity** (lo carga solo como workspace rules);
+> `opencode.jsonc` las carga en OpenCode vía `instructions`. Si cambias una regla, cámbialas en ambos.
+
 ---
 
 ## 3. Trampas ya sufridas en API Explorer (léelas antes de programar)
@@ -190,34 +206,44 @@ o pregúntale *"lista mis skills"*. En **OpenCode**: `/skills` o la herramienta 
 > versión permite agentes personalizados (*Customizations → agents*), se crean con **estos mismos 4 nombres
 > y modelos** para que ambos programas hablen el mismo idioma.
 
-### 7.3 Prompt de arranque — cópialo tal cual
+### 7.3 Prompt de arranque — cópialo tal cual (modo doble ventana)
+
+> Los dos programas se abren **sobre esta misma carpeta** (no hace falta clonar dos veces: es UN árbol).
+> Pega el prompt de tu herramienta en su ventana; el protocolo de turnos está en `PLAN.md` §2.3 y en `AGENTS.md`.
 
 **🟢 En OpenCode** (sesión abierta en esta carpeta):
 
 ```text
-Clona el repo https://github.com/JimSul16/IniMoviles2026B en esta carpeta si aún no está y abre el proyecto.
-Lee PLAN.md (§0 requisitos, §1 equipo y skills, §2 reglas, §3 trampas) y HANDOFF.md.
-Selecciona el agente mimo-infra y ejecuta la FASE A: lee el PDF de la prueba que está en la carpeta,
-completa PLAN.md §0 con los requisitos y sus puntos, y verifica la API candidata con el subagente
-verificador-api. NO escribas código todavía.
-Reglas: un solo escritor a la vez · 🟪 Gemini solo toca src/** · 🟦 MiMo solo la raíz/configs ·
-🟩 DeepSeek no edita nada · build verde antes de cada commit · commit atómico por fase (nunca git add -A).
-Usa las skills indicadas en PLAN.md §1.1 (ionic-app-setup para crear la app y el APK,
-ui-ionic-design antes de cualquier pantalla, pruebas-frontend-esfot para dar una fase por cerrada).
+Esta carpeta es el workspace compartido con Antigravity (dos programas, un solo árbol).
+Lee AGENTS.md, PLAN.md (§0 requisitos, §1 equipo y skills, §2 reglas y turnos, §3 trampas) y HANDOFF.md.
+Fíjate en la fila 🚦 de HANDOFF.md: si no es tu turno, NO escribas nada todavía.
+Tu rol por defecto es mimo-infra (raíz, configs, build, git, APK, README).
+FASE A: lee el PDF de la prueba que está en la carpeta, completa PLAN.md §0 con los requisitos y sus
+puntos, y verifica la API candidata con el subagente verificador-api (HTTP 200, CORS, paginación real).
+Al terminar: build verde → actualiza §4 → escribe tu bloque en HANDOFF.md con la 🚦 apuntando al
+siguiente → commit atómico (git add <rutas>, nunca git add -A).
+Reglas: un solo escritor a la vez · Gemini solo toca src/** · MiMo solo la raíz/configs · DeepSeek no
+edita nada · git y npm solo los usa el turno activo (nunca a la vez con la otra ventana).
+Usa las skills de PLAN.md §1.1 (ionic-app-setup para crear la app y el APK, pruebas-frontend-esfot para
+cerrar fase).
 ```
 
-**🟣 En Antigravity** (workspace = esta carpeta):
+**🟣 En Antigravity** (workspace = esta misma carpeta; `AGENTS.md` se carga solo):
 
 ```text
-Este workspace tiene el plan del proyecto en PLAN.md y las skills en .agents/skills/
-(ionic-app-setup, ui-ionic-design, pruebas-frontend-esfot, pruebas-backend-esfot, refactor-seguro,
-deteccion-codigo-muerto). Léelas antes de trabajar y usa la que indique PLAN.md §1.1 para cada tarea.
-Si el repo no está clonado, clónalo desde https://github.com/JimSul16/IniMoviles2026B.
-Tarea: FASE A — leer el PDF de la prueba, completar PLAN.md §0 (requisitos + puntos) y verificar la API
-con los criterios de §0.1. No programes nada en esta tarea.
-Roles del equipo (respétalos): mimo-infra = plan/scaffold/build/APK · gemini-ui = código e interfaz ·
-deepseek-revisor = revisión de solo lectura. Un solo escritor a la vez; commit atómico por fase.
+Este workspace lo comparte OpenCode: dos programas, un solo árbol de git. AGENTS.md y PLAN.md tienen
+las reglas; léelos antes de tocar nada. Las skills están en .agents/skills/ (deteccion-codigo-muerto,
+pruebas-backend-esfot, pruebas-frontend-esfot, refactor-seguro) y en .opencode/skills/ (ionic-app-setup,
+ui-ionic-design): usa la que indique PLAN.md §1.1 para cada tarea.
+Fíjate en la fila 🚦 de HANDOFF.md: si no es tu turno (el tuyo es gemini-ui), esperas — no edites nada.
+Tu rol es gemini-ui: programas los requisitos en src/** con la skill ui-ionic-design OBLIGATORIA antes
+de cualquier pantalla (nada de ion-card genérico con colores del starter).
+Cuando te toque: un requisito por fase → build verde → bloque en HANDOFF.md → commit atómico por rutas
+(nunca git add -A). NO toques la raíz ni configs (package.json, angular.json, README, .git): esas son
+de mimo-infra.
 ```
 
-> Sustituye `https://github.com/JimSul16/IniMoviles2026B` por la URL real de GitHub. **Pega uno u otro según la herramienta**: el objetivo
-> y las reglas son idénticos, así que ambos programas producen el mismo plan y las mismas fases.
+> **Pega el prompt de tu herramienta en su ventana** (son dos, no uno u otro: se usan los dos a la vez).
+> El objetivo y las reglas son idénticos, así que ambos programas producen el mismo plan y las mismas
+> fases. La fuente del repo es `https://github.com/JimSul16/IniMoviles2026B` (por si hay que re-clonar
+> en otra máquina: solo se clona **una** vez y ambas ventanas abren esa misma carpeta).

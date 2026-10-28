@@ -1,8 +1,9 @@
 {
   "$schema": "https://opencode.ai/config.json",
 
-  // Se cargan en TODAS las sesiones (los 3 modelos arrancan con el plan y el pase de testigo)
-  "instructions": ["PLAN.md", "HANDOFF.md"],
+  // Se cargan en TODAS las sesiones (los 3 modelos arrancan con el plan y el pase de testigo).
+  // AGENTS.md es el mismo que lee Antigravity como workspace rules → ambos programas, mismas reglas.
+  "instructions": ["AGENTS.md", "PLAN.md", "HANDOFF.md"],
 
   // SKILLS del proyecto (6 en total):
   //   .agents/skills/  → 4 skills de Antigravity (van dentro del repo → al clonarlas ya están)
