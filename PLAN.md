@@ -6,28 +6,57 @@
 
 ---
 
-## 0. Requisitos de la prueba ← **Rellenar con el PDF**
+## 0. Requisitos de la prueba ← **PDF: Prueba I "UrbanInspect"**
 
-> Pega aquí el enunciado resumido. Regla: un requisito = una fila = una fase = un commit.
+> **Enunciado (sección 3 y 4 del PDF):** app móvil para que los inspectores del Municipio de Quito consulten,
+> registren y actualicen **incidencias de infraestructura urbana** (luminarias dañadas, baches, señalización
+> deteriorada, alcantarillas obstruidas, daños en parques) desde Android, con **evidencia fotográfica** y
+> **ubicación**. El sistema de oficina se simula con una **API REST** y el clima se consulta en una
+> **API externa real**. La defensa es un **APK instalado** + demostración + explicar el código **sin IA**.
+> **Rúbrica binaria** (sin puntos parciales): 12,8 funcional + 3,2 defensa = 16 pts (Prueba I).
+> Regla: un requisito = una fila = una fase = un commit. Ordenado por **dependencias y peso**, no por número.
 
-| Req. | Qué pide el PDF | Pts | Fase | Responsable |
+| Req. | Qué pide el PDF (resumen operativo) | Pts | Fase | Responsable |
 |---|---|---|---|---|
-| R1 | *(del PDF)* | | C | 🟪 Gemini |
-| R2 | *(del PDF)* | | D | 🟪 Gemini |
-| R3 | *(del PDF)* | | E | 🟪 Gemini |
-| … | | | | |
+| **R2** | **Consulta de incidencias**: listado con los **8 campos** (código, tipo, descripción, dirección, sector, fecha, estado y fotografía si existe) + manejar **registros vacíos** y **fallo de consulta** | 1,6 | C | 🟪 Gemini |
+| **R3** | **Carga progresiva**: paginación **remota** en grupos pequeños según se avanza; **prohibido** descargar todo y partirlo en el teléfono; al agotarse los registros **no debe seguir pidiendo páginas** | 1,6 | D | 🟪 Gemini |
+| **R9** | **Detalle y reglas de estado**: pendiente → en proceso → resuelta; en proceso → resuelta; una **resuelta no retrocede**; para resolver es **obligatoria una observación**; el cambio queda en la API | 1,6 | E | 🟪 Gemini |
+| **R5** | **Registro de incidencias**: tipo, descripción, dirección, sector y prioridad (baja/media/alta); **validar obligatorios antes de enviar**; prioridad **alta exige fotografía** (en baja/media es opcional); el registro debe quedar en la API | 1,6 | F | 🟪 Gemini |
+| **R6** | **Evidencia fotográfica**: capturar y **revisar antes de guardar**; si cancela la captura **los demás datos quedan intactos**; si la foto es obligatoria y el permiso se deniega → explicarlo e **impedir guardar incompleto**; la foto debe quedar **accesible desde el detalle** (no basta una ruta temporal del dispositivo) | 1,6 | G | 🟪 Gemini |
+| **R7** | **Ubicación**: obtener coordenadas actuales (también alimentan al clima); en **bache es obligatoria**: sin GPS hay que permitir **coordenadas manuales válidas**; en el resto es opcional y siempre puede registrarse la dirección | 1,2 | H | 🟪 Gemini |
+| **R8** | **Recuperar registro incompleto**: si abandona el formulario o la app se cierra durante la captura, al reabrirla debe ofrecer **continuar o descartar**, conservando lo ya ingresado (salvo lo no recuperable justificadamente) | 1,2 | I | 🟪 Gemini |
+| **R4** | **Consulta de clima antes de guardar**: API meteorológica **externa y real**, distinta de la de incidencias, usando **las coordenadas del lugar**; muestra **temperatura actual, precipitación acumulada de la última hora (mm)** y **descripción del estado**; si supera **5 mm/h** advierte que puede dificultar el mantenimiento **sin bloquear**; si falla o no hay datos → informar y **permitir continuar**. Nada de datos fijos o simulados | 0,8 | J | 🟪 Gemini |
+| **R1** | **Seguimiento local**: marcar/desmarcar incidencias como "para seguimiento"; la lista de códigos **persiste al cerrar y abrir la app**; vista propia que muestra **solo** las marcadas; al desmarcar desaparece de esa vista **sin modificar el servicio de oficina** | 0,8 | K | 🟪 Gemini |
+| **R10** | **Navegación y APK**: **inicio con indicadores**, listado, sección de seguimiento, detalle y formulario de registro con navegación clara e interfaz pensada para **trabajo en campo**; los listados e indicadores deben **reflejar altas y actualizaciones**; demostrado con **APK instalado** en Android o emulador | 0,8 | L | 🟪 Gemini |
 
-| Decisión | Elección | Motivo |
+**Subtotal funcional: 12,8 pts** · Defensa oral: 3,2 pts (demostración, justificación de decisiones y explicar el código, sin IA).
+
+### 0.1 Decisiones técnicas (verificadas el 28/10/2026 con el subagente `verificador-api`)
+
+| Decisión | Elección | Motivo (con evidencia) |
 |---|---|---|
-| API | *(verificar antes de escribir código)* | debe responder desde la red local, sin clave y con CORS |
-| Descartada | *(por qué)* | |
-| Stack | Ionic + Angular standalone + Capacitor | el mismo que la vez pasada: ya está verificado |
-| Tiempo | *(según el PDF)* | |
+| **API de oficina (recurso `incidencias`)** | **MockAPI** → `https://<proyecto>.mockapi.io/api/v1/incidencias` (cuenta gratuita del estudiante: 1 proyecto / 2 recursos, sin tarjeta) | Única opción **sin backend propio** que cumple a la vez las **tres** exigencias del PDF: **paginación remota real** (`?page=&limit=` + cabecera `X-Total-Count`), **persistencia real** de POST/PATCH (lo que registra el inspector se lee después) y **CORS** desde `http://localhost:4200`. Además su campo **File** guarda la foto y devuelve una **URL pública permanente**, cumplendo "no basta una ruta temporal del dispositivo". La URL base vive en `src/environments/` (no es secreto; la cuota sí se respeta) |
+| **API de clima** | **Open-Meteo** → `https://api.open-meteo.com/v1/forecast?latitude=..&longitude=..&current=temperature_2m,precipitation,weather_code&timezone=auto` | Verificado con HTTP 200 + `Access-Control-Allow-Origin: *` + sin clave. Devuelve `current.temperature_2m`, `current.precipitation` (**mm de la hora en curso**, exactamente la "precipitación de la última hora" de R4) y `current.weather_code` (código WMO que traducimos a texto en español) |
+| **Código de la incidencia** | `INC-<id autoincremental>` (el `id` de MockAPI) | Identificador único, sin duplicados y sirve de clave para seguimiento y detalle |
+| **Descartada: JSONPlaceholder** | `?_page=&_limit=` + `X-Total-Count` | Pagina bien, CORS ok, pero el **POST no persiste** (201 falso) → R5/R9 imposibles |
+| **Descartada: ReqRes** | `?page=&per_page=` + `total/total_pages` | Paginación perfecta pero POST/PATCH son **simulados**: hacer GET del id creado devuelve **404** |
+| **Descartada: DummyJSON** | `?skip=&limit=` + `total` | Pagina bien y tiene CORS, pero **no persiste** y sus campos son fijos (productos) |
+| **Descartada: FakeStoreAPI** | `?limit` | No pagina de verdad (devuelve el array completo) y no persiste |
+| **Descartada: Platzi Fake API** | — | El dominio `fakeapi.platzi.com` **no resuelve** (ENOTFOUND) |
+| **Descartada: wttr.in (clima)** | `?format=j1` | Responde con CORS pero sin estructura determinista ni coordenadas de salida; Open-Meteo es la opción limpia |
+| **Stack** | Ionic + Angular standalone + Capacitor + TypeScript | el mismo que en API Explorer: ya está verificado y conocemos sus trampas |
+| **Persistencia local** | `@capacitor/preferences` | **solo** para el seguimiento (R1) y el borrador del formulario (R8); nunca se sube a la API |
+| **Dependencias adicionales** | ninguna salvo las imprescindibles (Capacitor Camera / Geolocation / Preferences) | el PDF exige justificar cada una por requisito |
+| **Tiempo** | El estudiante confirmó que su defensa **no** es la del 28/10 a las 14:00 | Se trabaja con calidad completa: un requisito por fase, sin saltarnos validaciones |
 
-### 0.1 Cómo se decide la API (hacerlo ANTES de todo)
-1. Probar los endpoints con el subagente `verificador-api`: HTTP 200, CORS `ACAO`, paginación real y campos suficientes.
-2. Regla del **fin real de datos**: `offset + pageLimit >= total` (o el equivalente de la API). **Nunca** simular el fin repitiendo la misma petición.
-3. Si la API no responde → respaldos probados: **Open Library**, **AniList**, **Kitsu**.
+### 0.2 Reglas de la API que NO se rompen (trampas de MockAPI)
+
+1. **Fin real de datos**: `offset + recibidos >= Number(X-Total-Count)`. **Nunca** se simula el fin repitiendo la petición: MockAPI responde 200 con `[]` y eso también pasa en la mitad de los datos.
+2. `X-Total-Count` va en la **cabecera**, no en el body → leer `response.headers.get('X-Total-Count')`.
+3. El nombre del recurso se añade **al final de la URL**: un recurso mal escrito devuelve **404**, y 404 en el listado **no** es caída de red (§3.10).
+4. Plan gratis con **cuota por hora**: `PAGE_SIZE = 10` y **debounce ≥ 400 ms**; la siembra de datos también consume cuota (se hace una sola vez desde infraestructura).
+5. La foto se sube en **multipart** al campo `File` y la API devuelve una **URL** que hay que guardar en el campo `foto` del registro.
+6. El registro de MockAPI **no admite campos desconocidos**: si el esquema no tiene `observacion`, el campo se pierde en silencio → el recurso se crea **con todos los campos del modelo** desde el principio.
 
 ---
 
@@ -136,25 +165,34 @@ Esto es lo que nos costó trabajo la vez pasada. Casi todo el PDF de la activida
 
 | Fase | Req. | Responsable | Estado |
 |---|---|---|---|
-| A — PDF + plan + endpoints | — | 🟦 MiMo | ⬜ |
-| B — Scaffold + estructura | R7 base | 🟦 MiMo | ⬜ |
-| C | R1 | 🟪 Gemini | ⬜ |
-| D | R2 | 🟪 Gemini | ⬜ |
-| E | R3 | 🟪 Gemini | ⬜ |
-| … | | | |
-| Cierre — APK + README + evidencias | | 🟦 MiMo | ⬜ |
+| A — PDF + plan + verificación de APIs | — | 🟦 MiMo | 🟡 `PLAN.md` listo, APIs verificadas; **pendiente la URL de MockAPI del estudiante** |
+| B — Scaffold + estructura + rutas + deps + siembra de datos | base | 🟦 MiMo | ⬜ |
+| C — Listado de incidencias (8 campos, vacío, error) | R2 | 🟪 Gemini | ⬜ |
+| D — Paginación remota e incremental | R3 | 🟪 Gemini | ⬜ |
+| E — Detalle + transiciones de estado + observación | R9 | 🟪 Gemini | ⬜ |
+| F — Formulario de registro + validaciones | R5 | 🟪 Gemini | ⬜ |
+| G — Cámara, previsualización y permisos | R6 | 🟪 Gemini | ⬜ |
+| H — GPS + coordenadas manuales (bache) | R7 | 🟪 Gemini | ⬜ |
+| I — Borrador recuperable (continuar/descartar) | R8 | 🟪 Gemini | ⬜ |
+| J — Clima real antes de guardar + aviso > 5 mm | R4 | 🟪 Gemini | ⬜ |
+| K — Seguimiento local (Preferences) | R1 | 🟪 Gemini | ⬜ |
+| L — Inicio con indicadores + navegación + pulido | R10 | 🟪 Gemini | ⬜ |
+| Cierre — APK por terminal + README + evidencias | — | 🟦 MiMo | ⬜ |
 
 ---
 
-## 5. Checklist de la rúbrica (rellenar con los puntos del PDF)
+## 5. Checklist de la rúbrica (binaria: se cumple entero o no vale nada)
 
-- [ ] Consumo real de API + modelo/servicio separados
-- [ ] Scroll/paginación robustos (sin duplicados, `complete()` garantizado, fin real)
-- [ ] Búsqueda con reinicio
-- [ ] Navegación y detalle con `:id` + regreso
-- [ ] Estados: carga, vacío, error y reintento
-- [ ] Persistencia local (Preferences)
-- [ ] README + GitHub + evidencia visual
+- [ ] **R1 (0,8)** — Las marcadas sobreviven al reiniciar la app · sección propia que las lista · desmarcar las quita de ahí **sin tocar la API**.
+- [ ] **R2 (1,6)** — Los **8 campos** visibles (código, tipo, descripción, dirección, sector, fecha, estado, foto si existe) · estado **vacío** con mensaje · estado **error** con reintento.
+- [ ] **R3 (1,6)** — Paginación **remota** con carga incremental al llegar al final · **cero** peticiones cuando se agota (`hasMore` por `X-Total-Count`) · sin duplicados (NG0955) · `complete()` siempre en `finally`.
+- [ ] **R4 (0,8)** — API climática **real** con las coordenadas de la incidencia · temperatura + precipitación última hora (mm) + condición · **aviso si > 5 mm** sin bloquear · fallo informado y se puede continuar.
+- [ ] **R5 (1,6)** — La incidencia creada **aparece en la API** · obligatorios validados antes de enviar · **prioridad alta sin foto ⇒ no guarda** · en baja/media la foto es opcional.
+- [ ] **R6 (1,6)** — Foto capturada y **previsualizada antes de guardar** · cancelar la captura **no borra el formulario** · permiso denegado explicado e impide guardar incompleto · la foto se ve en el detalle **después** de guardar (URL de la API, no ruta temporal).
+- [ ] **R7 (1,6→1,2)** — Coordenadas actuales obtenidas · **bache sin GPS ⇒ coordenadas manuales válidas** (lat −90..90, lon −180..180) · en el resto la ubicación es opcional y siempre cabe la dirección.
+- [ ] **R8 (1,2)** — Cerrar la app con el formulario a medias y al reabrirla ofrece **continuar/descartar** · al continuar se conservan los campos capturados.
+- [ ] **R9 (1,6)** — Solo transiciones válidas (pendiente→en proceso→resuelta; **resuelta no retrocede**) · resolver **exige observación** · el cambio se lee **después** en la API.
+- [ ] **R10 (0,8)** — Inicio con indicadores que **reflejan altas y actualizaciones** · navegación listado→detalle→registro→seguimiento clara · interfaz de campo (contraste, targets ≥ 44 px) · **APK instalado y funcional**.
 
 ---
 

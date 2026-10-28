@@ -10,13 +10,13 @@
 
 | Campo | Valor |
 |---|---|
-| **Proyecto** | Prueba de Aplicaciones Móviles (requisitos en `PLAN.md` §0) |
-| **Responsable ahora** | 🟦 MiMo (`mimo-infra`) — fase A |
-| **Fase actual** | A — leer el PDF + plan + verificar endpoints |
-| **BUILD** | — (aún no hay proyecto) |
-| **Commits** | — |
-| **🚦 Señal** | `SCAFFOLD: pendiente` |
-| **Errores conocidos** | — |
+| **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
+| **Responsable ahora** | 🟦 MiMo (`mimo-infra`) — fase B |
+| **Fase actual** | B — scaffold + estructura + rutas + deps + siembra |
+| **BUILD** | — (aún no existe el proyecto Angular) |
+| **Commits** | `61cf40e` · `1e09bba` · `fase-A: …` |
+| **🚦 Señal** | `FASE-A: commiteado — esperando crear el recurso incidencias en MockAPI` |
+| **Errores conocidos** | `GET …/incidencias` → **404**: el recurso **aún no está creado** en el panel de MockAPI (el proyecto sí existe y su CORS responde `ACAO: *`). El estudiante debe añadir el recurso `incidencias` con los 11 campos de `PLAN.md` §0 |
 
 ---
 
@@ -41,6 +41,36 @@
 
 **Decisiones a respetar:** API elegida solo si responde con HTTP 200 + CORS desde la red local ·
 `PAGE_SIZE` acordado en el plan · todo el HTTP vive en un único servicio · favoritos = solo ids.
+
+---
+
+## Bloque #2 — 🟦 MiMo (fase A cerrada: PDF leído + plan + APIs verificadas)
+
+```
+Fase completada: A — leer el PDF → PLAN.md §0 → verificar APIs.
+Hecho:
+  · PDF extraído con pypdf (el modelo no lee PDF directamente): 10 requisitos (R1..R10) + rúbrica binaria
+    12,8 funcional + 3,2 defensa. Orden de fases por dependencias y peso, no por número (ver PLAN.md §4).
+  · PLAN.md §0 rellena: requisitos operativos, tabla de decisiones y §0.2 con las trampas de MockAPI.
+  · §5 = checklist literal de la rúbrica (binaria).
+  · APIs verificadas con el subagente verificador-api:
+      – MockAPI  ✅ paginación remota (?page=&limit= + X-Total-Count), persistencia POST/PATCH real,
+                 CORS, campo File para la foto. Descartadas con motivo: JSONPlaceholder, ReqRes,
+                 DummyJSON, FakeStoreAPI, Platzi Fake API (todas: no persisten o no existen).
+      – Open-Meteo ✅ 200 + ACAO:* + current.temperature_2m / current.precipitation (mm última hora)
+                 / current.weather_code. Descartada wttr.in.
+  · Proyecto MockAPI del estudiante creado: https://6ae2831abbb541292299fd5e.mockapi.io/
+    (CORS verificado en vivo: ACAO *). URL base → src/environments (irá en fase B).
+Siguiente: fase B (scaffold) y, del lado del estudiante, crear el recurso `incidencias` con los 11 campos.
+Decisiones a respetar:
+  · API de oficina: MockAPI, recurso `incidencias`, id autoincremental → código `INC-<id>`.
+  · Fin real de datos por cabecera X-Total-Count: offset + recibidos >= total. PAGE_SIZE = 10.
+  · Clima: Open-Meteo, sin clave; current.precipitation = mm de la última hora.
+  · Foto: subir a MockAPI (File) y guardar la URL devuelta; comprimir antes de subir (cuota + tamaño).
+  · Favoritos (R1) y borrador (R8): solo en @capacitor/preferences, nunca en la API.
+BUILD: no aplica (fase de plan; aún no hay proyecto Angular).
+Errores conocidos: recurso `incidencias` → 404 hasta que se cree en el panel de MockAPI.
+```
 
 ---
 
