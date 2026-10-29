@@ -1,0 +1,163 @@
+import type { ComponentFixture } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of, throwError } from 'rxjs';
+
+import type { Incidencia } from '../../models/incidencia.model';
+import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
+import { IncidenciasService } from '../../services/incidencias.service';
+
+import { RegistroPage } from './registro.page';
+
+describe('RegistroPage (R5)', () => {
+  let component: RegistroPage;
+  let fixture: ComponentFixture<RegistroPage>;
+  let mockIncidenciasService: {
+    crearIncidencia: ReturnType<typeof vi.fn>;
+  };
+
+  const nuevaRespuesta: Incidencia = {
+    id: '27',
+    tipo: 'bache',
+    descripcion: 'Bache profundo en el carril central',
+    direccion: 'Av. Amazonas y Eloy Alfaro',
+    sector: 'Iñaquito',
+    fecha: '2026-10-28T12:00:00',
+    estado: 'pendiente',
+    prioridad: 'alta',
+    foto: 'data:image/jpeg;base64,samplephoto',
+    lat: -0.18,
+    lon: -78.48,
+    observacion: '',
+  };
+
+  beforeEach(async () => {
+    mockIncidenciasService = {
+      crearIncidencia: vi.fn(),
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [RegistroPage],
+      providers: [provideRouter([]), { provide: IncidenciasService, useValue: mockIncidenciasService }],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RegistroPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('se crea correctamente', () => {
+    expect(component).toBeTruthy();
+  });
+
+  it('valida campos obligatorios y bloquea el envío si el formulario está incompleto (R5)', () => {
+    component.descripcion.set('');
+    component.direccion.set('');
+    component.sector.set('');
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).not.toHaveBeenCalled();
+    expect(component.errores().descripcion).toBeDefined();
+    expect(component.errores().direccion).toBeDefined();
+    expect(component.errores().sector).toBeDefined();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('La descripción técnica es obligatoria');
+    expect(compiled.textContent).toContain('La dirección exacta del daño es obligatoria');
+  });
+
+  it('regla R5: en prioridad ALTA la foto es obligatoria y bloquea el guardado si falta', () => {
+    component.tipo.set('bache');
+    component.descripcion.set('Hundimiento de asfalto pronunciado');
+    component.direccion.set('Av. Prensa y Florida');
+    component.sector.set('Cotocollao');
+    component.prioridad.set('alta');
+    component.foto.set(''); // Sin foto
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).not.toHaveBeenCalled();
+    expect(component.errores().foto).toContain('prioridad ALTA es obligatorio adjuntar una fotografía');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('prioridad ALTA es obligatorio adjuntar una fotografía');
+  });
+
+  it('regla R5: en prioridad media o baja la fotografía es opcional y permite guardar', () => {
+    mockIncidenciasService.crearIncidencia.mockReturnValue(
+      of({
+        ...nuevaRespuesta,
+        id: '28',
+        prioridad: 'media',
+        foto: null,
+      }),
+    );
+
+    component.tipo.set('luminaria');
+    component.descripcion.set('Lámpara parpadeante en poste');
+    component.direccion.set('Calle Guayaquil y Chile');
+    component.sector.set('Centro Histórico');
+    component.prioridad.set('media');
+    component.foto.set(''); // Opcional en media
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
+    expect(component.incidenciaCreada()).toBe('INC-28');
+  });
+
+  it('permite registrar en prioridad ALTA cuando la fotografía está presente', () => {
+    mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
+
+    component.tipo.set('bache');
+    component.descripcion.set('Bache profundo en el carril central');
+    component.direccion.set('Av. Amazonas y Eloy Alfaro');
+    component.sector.set('Iñaquito');
+    component.prioridad.set('alta');
+    component.foto.set('data:image/jpeg;base64,samplephoto');
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tipo: 'bache',
+        prioridad: 'alta',
+        foto: 'data:image/jpeg;base64,samplephoto',
+        estado: 'pendiente',
+      }),
+    );
+    expect(component.incidenciaCreada()).toBe('INC-27');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('¡Incidencia registrada con éxito!');
+    expect(compiled.textContent).toContain('INC-27');
+  });
+
+  it('maneja fallos de red o servidor sin perder los datos diligenciados', () => {
+    const errorRed: ErrorConsultaIncidencias = {
+      tipo: 'red',
+      status: 0,
+      mensaje: 'Fallo de conexión con el servidor municipal.',
+    };
+    mockIncidenciasService.crearIncidencia.mockReturnValue(throwError(() => errorRed));
+
+    component.tipo.set('alcantarilla');
+    component.descripcion.set('Tapa de alcantarilla rota con riesgo');
+    component.direccion.set('Av. América y Patria');
+    component.sector.set('Mariscal Sucre');
+    component.prioridad.set('media');
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(component.errorServidor()).toContain('Fallo de conexión');
+    // Los datos deben persistir en el formulario para no frustrar al usuario
+    expect(component.descripcion()).toBe('Tapa de alcantarilla rota con riesgo');
+    expect(component.direccion()).toBe('Av. América y Patria');
+  });
+});

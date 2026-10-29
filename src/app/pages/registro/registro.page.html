@@ -3,20 +3,208 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/" text="Volver"></ion-back-button>
     </ion-buttons>
-    <ion-title>Registrar incidencia</ion-title>
+    <ion-title>Registrar Incidencia</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="contenedor-principal">
-    <div class="estado-box">
-      <div class="icono-circulo vacio">
-        <ion-icon name="add-circle-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+    <!-- CONFIRMACIÓN DE ÉXITO -->
+    @if (incidenciaCreada()) {
+    <div class="estado-box exito-box" role="status">
+      <div class="icono-circulo exito">
+        <ion-icon name="checkmark-circle-outline" class="estado-icon" aria-hidden="true"></ion-icon>
       </div>
-      <h2 class="estado-titulo">Nuevo reporte municipal</h2>
+      <h2 class="estado-titulo">¡Incidencia registrada con éxito!</h2>
       <p class="estado-descripcion">
-        Levantamiento de incidencias de infraestructura urbana con captura de evidencia y geolocalización.
+        Se generó el expediente municipal con código <strong>{{ incidenciaCreada() }}</strong> y quedó archivado con
+        estado <em>Pendiente</em> en la base de datos municipal.
       </p>
+
+      <div class="botones-fila-exito">
+        <ion-button (click)="irAlListado()" color="primary" fill="solid" class="accion-btn">
+          <ion-icon name="list-outline" slot="start" aria-hidden="true"></ion-icon>
+          Ver en el Listado
+        </ion-button>
+        <ion-button (click)="incidenciaCreada.set(null)" fill="outline" color="primary" class="accion-btn">
+          <ion-icon name="add-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+          Registrar otra incidencia
+        </ion-button>
+      </div>
     </div>
+    } @else {
+    <!-- FORMULARIO DE REGISTRO (R5) -->
+    <article class="formulario-card">
+      <header class="formulario-cabecera">
+        <h1 class="formulario-titulo">Nuevo Reporte de Inspección</h1>
+        <p class="formulario-subtitulo">
+          Levantamiento técnico de infraestructura urbana en Quito. Los campos con (*) son obligatorios.
+        </p>
+      </header>
+
+      <!-- CAMPO 1: TIPO DE INCIDENCIA -->
+      <div class="campo-grupo">
+        <label for="tipo-select" class="campo-label"> Tipo de infraestructura (*): </label>
+        <select id="tipo-select" class="form-control-input" [ngModel]="tipo()" (ngModelChange)="tipo.set($event)">
+          @for (t of tipos; track t.valor) {
+          <option [value]="t.valor">{{ t.etiqueta }}</option>
+          }
+        </select>
+        @if (errores().tipo) {
+        <span class="campo-error" role="alert">{{ errores().tipo }}</span>
+        }
+      </div>
+
+      <!-- CAMPO 2: PRIORIDAD DE ATENCIÓN -->
+      <div class="campo-grupo">
+        <span class="campo-label" id="label-prioridad">Prioridad de atención (*):</span>
+        <div class="prioridades-selector" role="radiogroup" aria-labelledby="label-prioridad">
+          @for (p of prioridades; track p.valor) {
+          <button
+            type="button"
+            class="prioridad-btn"
+            [class.activo]="prioridad() === p.valor"
+            [ngClass]="'prio-' + p.valor"
+            (click)="prioridad.set(p.valor)"
+            [attr.aria-pressed]="prioridad() === p.valor"
+          >
+            <ion-icon [name]="p.icono" aria-hidden="true"></ion-icon>
+            {{ p.etiqueta }}
+          </button>
+          }
+        </div>
+
+        @if (esFotoObligatoria()) {
+        <div class="aviso-prio-alta" role="note">
+          <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+          <span>Prioridad ALTA seleccionada: La fotografía de evidencia es obligatoria por normativa (R5).</span>
+        </div>
+        } @if (errores().prioridad) {
+        <span class="campo-error" role="alert">{{ errores().prioridad }}</span>
+        }
+      </div>
+
+      <!-- CAMPO 3: DESCRIPCIÓN TÉCNICA -->
+      <div class="campo-grupo">
+        <label for="descripcion-input" class="campo-label"> Descripción del daño (*): </label>
+        <textarea
+          id="descripcion-input"
+          rows="3"
+          class="form-control-input textarea-control"
+          [ngModel]="descripcion()"
+          (ngModelChange)="descripcion.set($event)"
+          placeholder="Describa el estado actual, elementos deteriorados y posibles riesgos para los transeúntes..."
+        ></textarea>
+        @if (errores().descripcion) {
+        <span class="campo-error" role="alert">{{ errores().descripcion }}</span>
+        }
+      </div>
+
+      <!-- CAMPO 4: DIRECCIÓN -->
+      <div class="campo-grupo">
+        <label for="direccion-input" class="campo-label"> Dirección exacta (*): </label>
+        <input
+          id="direccion-input"
+          type="text"
+          class="form-control-input"
+          [ngModel]="direccion()"
+          (ngModelChange)="direccion.set($event)"
+          placeholder="Ej: Av. 6 de Diciembre N24-15 y Colón"
+        />
+        @if (errores().direccion) {
+        <span class="campo-error" role="alert">{{ errores().direccion }}</span>
+        }
+      </div>
+
+      <!-- CAMPO 5: SECTOR / PARROQUIA DE QUITO -->
+      <div class="campo-grupo">
+        <label for="sector-input" class="campo-label"> Sector o Parroquia (*): </label>
+        <input
+          id="sector-input"
+          type="text"
+          list="lista-sectores"
+          class="form-control-input"
+          [ngModel]="sector()"
+          (ngModelChange)="sector.set($event)"
+          placeholder="Ej: Centro Histórico"
+        />
+        <datalist id="lista-sectores">
+          @for (s of sectoresComunes; track s) {
+          <option [value]="s"></option>
+          }
+        </datalist>
+        @if (errores().sector) {
+        <span class="campo-error" role="alert">{{ errores().sector }}</span>
+        }
+      </div>
+
+      <!-- CAMPO 6: EVIDENCIA FOTOGRÁFICA (R5 + R6) -->
+      <div class="campo-grupo">
+        <span class="campo-label" id="label-foto">
+          Fotografía de evidencia: @if (esFotoObligatoria()) {
+          <span class="marca-obligatoria">*(Obligatoria)</span>
+          } @else {
+          <span class="marca-opcional">(Opcional en baja/media)</span>
+          }
+        </span>
+
+        @if (foto()) {
+        <div class="foto-previa-caja">
+          <img [src]="foto()" alt="Previsualización de la evidencia fotográfica" class="foto-previa-img" />
+          <div class="foto-previa-acciones">
+            <ion-button (click)="eliminarFoto()" color="danger" fill="outline" size="small" class="accion-btn">
+              <ion-icon name="trash-outline" slot="start" aria-hidden="true"></ion-icon>
+              Quitar foto
+            </ion-button>
+          </div>
+        </div>
+        } @else {
+        <div class="subir-foto-caja">
+          <label for="foto-file-input" class="subir-foto-btn" tabindex="0">
+            <ion-icon name="camera-outline" class="cam-icon" aria-hidden="true"></ion-icon>
+            <span>Seleccionar o capturar fotografía</span>
+          </label>
+          <input
+            id="foto-file-input"
+            type="file"
+            accept="image/*"
+            class="input-file-oculto"
+            (change)="onFileSelected($event)"
+          />
+        </div>
+        } @if (errores().foto) {
+        <div class="campo-error-box" role="alert">
+          <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ errores().foto }}</span>
+        </div>
+        }
+      </div>
+
+      <!-- ERROR DEL SERVIDOR AL GUARDAR -->
+      @if (errorServidor()) {
+      <div class="alerta-error-box" role="alert">
+        <ion-icon name="close-circle-outline" aria-hidden="true"></ion-icon>
+        <span>{{ errorServidor() }}</span>
+      </div>
+      }
+
+      <!-- BOTÓN DE GUARDADO -->
+      <div class="botones-guardado-panel">
+        <ion-button
+          (click)="guardar()"
+          [disabled]="enviando()"
+          color="primary"
+          expand="block"
+          class="accion-btn btn-guardar-principal"
+        >
+          @if (enviando()) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+          Guardando en la API municipal... } @else {
+          <ion-icon name="save-outline" slot="start" aria-hidden="true"></ion-icon>
+          Registrar Incidencia }
+        </ion-button>
+      </div>
+    </article>
+    }
   </div>
 </ion-content>

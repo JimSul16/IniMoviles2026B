@@ -12,10 +12,10 @@
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
 | **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
-| **Fase actual** | E cerrada · iniciando fase F (R5: registro y validaciones) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **28/28** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `fase-E: …` |
-| **🚦 Señal** | `FASE-E: commiteado — iniciando fase F (R5: registro y validaciones)` |
+| **Fase actual** | F cerrada · iniciando fase G (R6: evidencia fotográfica y cámara) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **34/34** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `fase-F: …` |
+| **🚦 Señal** | `FASE-F: commiteado — iniciando fase G (R6: evidencia fotográfica)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -360,6 +360,32 @@ Hecho:
      `detalle.page.spec.ts` verificando carga, 404, red, transiciones válidas, observación obligatoria y no-retroceso.
 BUILD: verde (build 0 warnings, lint 0 warnings, 28 unit tests pasando, 2 e2e pasando).
 Siguiente: Fase F (R5 — formulario de registro de incidencias y validaciones).
+```
+
+---
+
+## Bloque #11 — 🟪 gemini-ui (fase F cerrada: formulario de registro R5)
+
+```
+Fase completada: F — formulario de registro de incidencias y validaciones (R5, 1,6 pts).
+Hecho:
+  1. Formulario técnico de inspección con todos los campos requeridos: tipo, prioridad,
+     descripción, dirección, sector y evidencia fotográfica.
+  2. Validación estricta antes de enviar:
+     - Tipo, descripción (mínimo 5 caracteres), dirección (mínimo 3 caracteres) y sector obligatorios.
+     - REGLA R5 CRÍTICA: En prioridad ALTA es obligatoria la fotografía de evidencia; si no se
+       adjunta, el formulario bloquea el envío con alerta visual explícita. En prioridad baja o
+       media la fotografía es opcional y permite guardar.
+  3. Persistencia en la API: método `crearIncidencia()` mediante POST a MockAPI con estado 'pendiente'.
+  4. Prevención de pérdida de datos: si la API falla o la red cae, el formulario mantiene todos
+     los campos ingresados por el inspector para evitar reprocesos en campo.
+  5. Confirmación de registro con código oficial `INC-<id>` devuelto por la API.
+  6. Accesibilidad y diseño de campo: targets táctiles >= 44 px, selectores de prioridad con alto
+     contraste, asociación accesible entre etiquetas y controles sin violaciones de lint.
+  7. Tests: 6 tests unitarios en `registro.page.spec.ts` cubriendo validaciones obligatorias,
+     regla de foto en prioridad alta vs baja/media, persistencia POST y retención ante fallos.
+BUILD: verde (build 0 warnings, lint 0 warnings, 34 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase G (R6 — evidencia fotográfica con cámara Capacitor, compresión <= 70 KB, cancelación y permisos).
 ```
 
 ---
