@@ -11,12 +11,12 @@
 | Campo | Valor |
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
-| **Responsable ahora** | 🟦 **`mimo-infra`** — verificación y fase D (R3: carga progresiva e incremental) |
-| **Fase actual** | C cerrada — pase a fase D (R3: paginación remota e incremental) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` 11/11 · `test:e2e` 2/2 |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (fase A) · fase B · fase C |
-| **🚦 Señal** | `FASE-C: commiteado — MiMo verifica y abre la fase D` |
-| **Errores conocidos** | · El recurso de MockAPI se llama **`API`** (no se pudo renombrar) → la URL vive en `environment.ts`; ver `PLAN.md` §0.1/§0.2 · **No existe `X-Total-Count`**: el fin real es `items.length === PAGE_SIZE` · límite de payload ≈100 KB (foto ≤ 70 KB base64) |
+| **Responsable ahora** | 🟪 **`gemini-ui`** — fase C' (arreglos desbloqueantes) y luego fase D (R3) |
+| **Fase actual** | C verificada y cerrada · pendiente C' y D |
+| **BUILD** | ✅ **verde** — `npm run build` · `tsc` app+spec · `npm run lint` · `test:unit` **11/11** · `test:e2e` 2/2 |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `fase-C-verificacion: …` |
+| **🚦 Señal** | `FASE-C: verificada — gemini-ui hace C' (nav + oscuro + guard) y luego D` |
+| **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** · ⚠️ **aún no hay navegación al listado** (🔴 de la revisión) · ⚠️ **tema oscuro ilegible** (🟠 de la revisión) |
 
 ---
 
@@ -143,7 +143,68 @@ Errores conocidos: ninguno.
 
 ---
 
-## Bloque #N — de <modelo> a <modelo>
+## Bloque #5 — 🟦 MiMo (verificación de la fase C + arreglos de datos y documentación)
+
+```
+Fase completada: verificación de C (R2) + arreglos de infraestructura.
+Hecho:
+  · verificador-build → BUILD: verde · 11/11 tests unit (5 servicio con HttpTestingController real,
+    5 página, 1 component) · 2/2 e2e · lint --max-warnings 0 · 0 warnings de budget.
+  · Confirmado: 8 campos presentes, estados carga/vacío/error separados, HTTP solo en el servicio,
+    cero `any`, cero `console.log`, iconos registrados, y SOLO `?page=1&limit=10` (sin scroll aún: correcto para C).
+  · Arreglos míos (zona 🟦): PLAN.md §3.15 y AGENTS.md con el budget REAL (2 kB/4 kB, no 3/6);
+    §5 R3 ya no menciona X-Total-Count (que no existe); §5 R6 ahora dice base64 dentro del registro;
+    environments con "26 sembrados / 10 = 3 páginas".
+  · Datos: `scripts/sembrar-incidencias.mjs` tenía 'Av.美洲 10 de Agosto' (carácter chino) → corregido
+    en el script; los registros afectados se arreglaron con PATCH (no re-siembra, para no perder INC-1..26):
+    11 direcciones reasignadas → 26 registros, 13 direcciones distintas, cero caracteres no-ASCII.
+Siguiente: 🟪 fase C' (desbloqueantes) → luego fase D (R3).
+Decisiones a respetar:
+  · NO re-sembrar con `--limpiar` salvo que se acepte perder la numeración INC-1..INC-26 (el contador
+    de MockAPI seguiría desde 27).
+  · `environments/` es zona de infraestructura: su URL solo la cambia MiMo.
+BUILD: verde.
+Errores conocidos: ver fila de arriba (nav ausente y tema oscuro vienen de la revisión de DeepSeek).
+```
+
+---
+
+## Bloque #6 — 🩩 DeepSeek (revisión de rúbrica tras la fase C, solo lectura)
+
+```
+Veredicto general: R2 está MUY bien implementado (≈12,5/100 = lo que hoy puntúa) y el código es
+limpio; el riesgo es de DEMOSTRACIÓN, no de contenido. Rúbrica binaria: "no se ve" = "no se cumple".
+
+🔴 Bloqueante
+ · No hay NAVEGACIÓN al listado: 0 coincidencias de routerLink/router.navigate en src/; inicio es un
+   placeholder. Desde el APK no se llega a /incidencias → R2 (1,6 pts) no demostrable y R10 afectado.
+   El e2e lo tapa porque navega por URL. → fase C'.
+
+🟠 Importantes
+ · Tema oscuro ilegible: index.html activa color-scheme light dark + dark.system.css, pero
+   variables.scss define la paleta SOLO en :root y se carga después → contraste ≈1,07:1 en
+   .descripcion-texto/.meta-valor/.estado-titulo (global.scss:211,252,294). Si el móvil de la defensa
+   está en oscuro, el listado se ve vacío. → fase C'.
+ · Carrera en la recarga: falta guard síncrono de peticiones simultáneas y token de generación
+   (listado.page.ts:61-80) + takeUntilDestroyed → trampas §3.4/§3.7. → fase C'.
+ · Fase D: el SERVICIO está listo (parametriza page/limit), pero la PÁGINA hay que rehacerla:
+   set() reemplaza siempre (§3.2), pone 'cargando' en cada llamada (borra la lista), fija page=1,
+   no hay offset/hasMore/Set de ids (riesgo NG0955), no hay ion-infinite-scroll ni finalize.
+ · Datos: fotos sembradas son PNG de 160×120 (~1 KB) que se ven estiradas → credibilidad de evidencia.
+
+🟡 Menores
+ · :host{display:block} en listado.page.scss anula .ion-page{display:flex} → posible recorte inferior.
+ · index.html: <html lang="en"> e <title>Ionic App</title> (identidad de starter).
+ · prioridad pintada con | uppercase en vez de la etiqueta PRIORIDADES · 11,2 px en badges.
+ · data ?? [] no comprueba que sea arreglo; la <img> no tiene (error) → fallback no dispara.
+ · Estilos del listado en global.scss con clases genéricas (.card-header/.card-body) → colisión
+   probable con detalle/registro en la fase E.
+
+Puntos fuertes confirmados: estados 4 completos (skeleton idéntico a la tarjeta), 404 ≠ red bien
+modelado, cero any/console.log, tests reales con HttpTestingController, identidad municipal propia
+(sin ion-card del starter), targets ≥44 px, iconos registrados.
+Informe completo disponible en la sesión del subagente revisor-rubrica.
+```
 
 ```
 Fase completada: ...

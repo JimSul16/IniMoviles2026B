@@ -103,7 +103,7 @@ const SECTORES = [
 const CALLES = [
   'Av. República y Guayaquil',
   'Calle Venezuela y Baquerizo',
-  'Av.美洲 10 de Agosto',
+  'Av. 10 de Agosto y Naciones Unidas',
   'Calle Larga y Chile',
   'Av. Amazonas y Atahualpa',
   'Calle García Moreno y Pichincha',

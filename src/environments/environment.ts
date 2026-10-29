@@ -12,6 +12,6 @@ export const environment = {
   /** API meteorológica externa REAL (sin clave, CORS `*`). */
   climaApiUrl: 'https://api.open-meteo.com/v1/forecast',
 
-  /** Registros por petición: la paginación es REMOTA (R3). 10 x 30+ sembrados = 3+ páginas. */
+  /** Registros por petición: la paginación es REMOTA (R3). 26 sembrados / 10 = 3 páginas. */
   pageSize: 10,
 };

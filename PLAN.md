@@ -158,7 +158,7 @@ Esto es lo que nos costó trabajo la vez pasada. Casi todo el PDF de la activida
 12. **Reiniciar la búsqueda con una carga en vuelo** deja mudo al `ion-infinite-scroll` (Ionic pone `isLoading=false` sin resetear `didFire`) → espera la petición antes de vaciar.
 13. **`[disabled]` del scroll incluye `error()` a propósito**: si lo quitas, entra en bucle de reintentos.
 14. **Iconos nuevos → `addIcons()` en `main.ts`**, si no, no se ven.
-15. **Presupuesto de estilos por componente** (`anyComponentStyle`): 3 kB warning / 6 kB error en `angular.json`.
+15. **Presupuesto de estilos por componente** (`anyComponentStyle`): en este starter es **2 kB warning / 4 kB error** en `angular.json` (el de API Explorer era 3/6). Las clases compartidas viven en `global.scss`.
 
 ---
 
@@ -168,7 +168,8 @@ Esto es lo que nos costó trabajo la vez pasada. Casi todo el PDF de la activida
 |---|---|---|---|
 | A — PDF + plan + verificación de APIs | — | 🟦 MiMo | ✅ `259de6c` — plan completo y APIs verificadas en vivo |
 | B — Scaffold + estructura + rutas + deps + siembra de datos | base | 🟦 MiMo | ✅ BUILD verde · 26 incidencias sembradas |
-| C — Listado de incidencias (8 campos, vacío, error) | R2 | 🟪 Gemini | ⬜ |
+| C — Listado de incidencias (8 campos, vacío, error) | R2 | 🟪 Gemini | ✅ `a666ea2` — verificado: BUILD verde, 11/11 tests |
+| **C' — Arreglos desbloqueantes** (nav mínima desde inicio, tema oscuro, guard + token en la recarga) | refuerzo R2/R10 | 🟪 Gemini | ⬜ **prioritario**: sin nav no se puede demostrar R2 (hallazgo 🔴 de DeepSeek) |
 | D — Paginación remota e incremental | R3 | 🟪 Gemini | ⬜ |
 | E — Detalle + transiciones de estado + observación | R9 | 🟪 Gemini | ⬜ |
 | F — Formulario de registro + validaciones | R5 | 🟪 Gemini | ⬜ |
@@ -186,10 +187,10 @@ Esto es lo que nos costó trabajo la vez pasada. Casi todo el PDF de la activida
 
 - [ ] **R1 (0,8)** — Las marcadas sobreviven al reiniciar la app · sección propia que las lista · desmarcar las quita de ahí **sin tocar la API**.
 - [ ] **R2 (1,6)** — Los **8 campos** visibles (código, tipo, descripción, dirección, sector, fecha, estado, foto si existe) · estado **vacío** con mensaje · estado **error** con reintento.
-- [ ] **R3 (1,6)** — Paginación **remota** con carga incremental al llegar al final · **cero** peticiones cuando se agota (`hasMore` por `X-Total-Count`) · sin duplicados (NG0955) · `complete()` siempre en `finally`.
+- [ ] **R3 (1,6)** — Paginación **remota** con carga incremental al llegar al final · **cero** peticiones cuando se agota (`hasMore = items.length === PAGE_SIZE`; **no existe** `X-Total-Count`, ver §0.2.1) · sin duplicados (NG0955) · `complete()` siempre en `finally`.
 - [ ] **R4 (0,8)** — API climática **real** con las coordenadas de la incidencia · temperatura + precipitación última hora (mm) + condición · **aviso si > 5 mm** sin bloquear · fallo informado y se puede continuar.
 - [ ] **R5 (1,6)** — La incidencia creada **aparece en la API** · obligatorios validados antes de enviar · **prioridad alta sin foto ⇒ no guarda** · en baja/media la foto es opcional.
-- [ ] **R6 (1,6)** — Foto capturada y **previsualizada antes de guardar** · cancelar la captura **no borra el formulario** · permiso denegado explicado e impide guardar incompleto · la foto se ve en el detalle **después** de guardar (URL de la API, no ruta temporal).
+- [ ] **R6 (1,6)** — Foto capturada y **previsualizada antes de guardar** · cancelar la captura **no borra el formulario** · permiso denegado explicado e impide guardar incompleto · la foto se ve en el detalle **después** de guardar (base64 **dentro** del registro de la API, no una ruta temporal del dispositivo).
 - [ ] **R7 (1,6→1,2)** — Coordenadas actuales obtenidas · **bache sin GPS ⇒ coordenadas manuales válidas** (lat −90..90, lon −180..180) · en el resto la ubicación es opcional y siempre cabe la dirección.
 - [ ] **R8 (1,2)** — Cerrar la app con el formulario a medias y al reabrirla ofrece **continuar/descartar** · al continuar se conservan los campos capturados.
 - [ ] **R9 (1,6)** — Solo transiciones válidas (pendiente→en proceso→resuelta; **resuelta no retrocede**) · resolver **exige observación** · el cambio se lee **después** en la API.

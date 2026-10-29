@@ -36,4 +36,4 @@
 
 `complete()` en `finally` · dedupe por id con `Set` · offset por lo recibido · token de generación en
 la búsqueda · vacío ≠ error · 404 ≠ caída de red · favoritos = solo ids · `addIcons()` en `main.ts` ·
-budget de SCSS 3 kB/6 kB.
+budget de SCSS 2 kB/4 kB.
