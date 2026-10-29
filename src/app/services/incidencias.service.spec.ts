@@ -56,7 +56,12 @@ describe('IncidenciasService', () => {
     });
 
     const req = httpTesting.expectOne(
-      (r) => r.url === environment.incidenciasApiUrl && r.params.get('page') === '1' && r.params.get('limit') === '10',
+      (r) =>
+        r.url === environment.incidenciasApiUrl &&
+        r.params.get('page') === '1' &&
+        r.params.get('limit') === '10' &&
+        r.params.get('sortBy') === 'fecha' &&
+        r.params.get('order') === 'desc',
     );
 
     expect(req.request.method).toBe('GET');

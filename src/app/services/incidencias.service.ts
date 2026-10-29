@@ -39,7 +39,11 @@ export class IncidenciasService {
    * Consulta una página remota de incidencias en MockAPI (R2, R3).
    */
   getIncidencias(page = 1, limit = environment.pageSize): Observable<Incidencia[]> {
-    const params = new HttpParams().set('page', page.toString()).set('limit', limit.toString());
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('sortBy', 'fecha')
+      .set('order', 'desc');
 
     return this.http.get<Incidencia[]>(this.apiUrl, { params }).pipe(
       catchError((error: unknown) => {
@@ -74,6 +78,9 @@ export class IncidenciasService {
     };
 
     return this.http.patch<Incidencia>(`${this.apiUrl}/${id}`, body).pipe(
+      tap(() => {
+        this.marcarNuevaIncidencia();
+      }),
       catchError((error: unknown) => {
         return throwError(() => this.mapearError(error, id));
       }),
