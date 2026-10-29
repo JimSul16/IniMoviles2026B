@@ -133,6 +133,52 @@ describe('IncidenciasService', () => {
     expect(errorCapturado?.status).toBe(500);
   });
 
+  it('clasifica error 429 con mensaje de cuota agotada', () => {
+    let errorCapturado: ErrorConsultaIncidencias | undefined;
+
+    service.getIncidencias().subscribe({
+      next: () => {
+        throw new Error('No debería tener éxito');
+      },
+      error: (err: ErrorConsultaIncidencias) => {
+        errorCapturado = err;
+      },
+    });
+
+    const req = httpTesting.expectOne((r) => r.url === environment.incidenciasApiUrl);
+    req.flush('Too Many Requests', {
+      status: 429,
+      statusText: 'Too Many Requests',
+    });
+
+    expect(errorCapturado).toBeDefined();
+    expect(errorCapturado?.status).toBe(429);
+    expect(errorCapturado?.mensaje).toContain('cuota');
+  });
+
+  it('clasifica error 413 con mensaje de tamaño de fotografía excedido', () => {
+    let errorCapturado: ErrorConsultaIncidencias | undefined;
+
+    service.getIncidencias().subscribe({
+      next: () => {
+        throw new Error('No debería tener éxito');
+      },
+      error: (err: ErrorConsultaIncidencias) => {
+        errorCapturado = err;
+      },
+    });
+
+    const req = httpTesting.expectOne((r) => r.url === environment.incidenciasApiUrl);
+    req.flush('Payload Too Large', {
+      status: 413,
+      statusText: 'Payload Too Large',
+    });
+
+    expect(errorCapturado).toBeDefined();
+    expect(errorCapturado?.status).toBe(413);
+    expect(errorCapturado?.mensaje).toContain('fotografía supera el tamaño');
+  });
+
   it('obtiene una incidencia por ID (R9)', () => {
     let resultado: Incidencia | undefined;
 

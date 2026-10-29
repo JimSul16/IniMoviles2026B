@@ -1,6 +1,6 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
 
 import type { Incidencia } from '../../models/incidencia.model';
@@ -462,7 +462,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
     expect(component.borradorPendiente()?.descripcion).toBe('Borrador rescatado del almacenamiento');
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Registro incompleto recuperado (R8)');
+    expect(compiled.textContent).toContain('Registro incompleto recuperado');
     expect(compiled.textContent).toContain('Continuar reporte');
     expect(compiled.textContent).toContain('Descartar');
   });

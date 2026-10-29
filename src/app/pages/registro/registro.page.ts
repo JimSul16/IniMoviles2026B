@@ -294,15 +294,14 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
 
     // Regla de oro R5: Prioridad alta exige fotografía
     if (this.esFotoObligatoria() && !this.foto()) {
-      nuevosErrores.foto =
-        'Para incidencias de prioridad ALTA es obligatorio adjuntar una fotografía de evidencia (R5).';
+      nuevosErrores.foto = 'Para incidencias de prioridad ALTA es obligatorio adjuntar una fotografía de evidencia.';
     }
 
     // Regla de oro R7: En bache la ubicación es obligatoria (GPS o manual válida)
     if (this.esBache()) {
       if (!this.ubicacionService.validarCoordenadas(this.lat(), this.lon())) {
         nuevosErrores.coordenadas =
-          'Para incidencias de tipo Bache las coordenadas geográficas son obligatorias (R7). Active el GPS o ingrese valores manuales válidos (latitud entre -90 y 90, longitud entre -180 y 180).';
+          'Para incidencias de tipo Bache las coordenadas geográficas son obligatorias. Active el GPS o ingrese valores manuales válidos (latitud entre -90 y 90, longitud entre -180 y 180).';
       }
     } else if (this.lat() !== null || this.lon() !== null) {
       // Si en otro tipo se ingresaron coordenadas parciales, validar que ambas sean correctas

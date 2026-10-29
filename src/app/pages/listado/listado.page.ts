@@ -76,7 +76,9 @@ export class ListadoPage implements ViewWillEnter {
    * garantizando que los datos se refresquen tras un registro o actualización (R10).
    */
   ionViewWillEnter(): void {
-    this.cargarIncidencias();
+    if (this.incidencias().length === 0 || this.incidenciasService.consumirNuevaIncidencia?.()) {
+      this.cargarIncidencias();
+    }
   }
 
   /**

@@ -86,8 +86,8 @@ export class BorradorService {
       b.descripcion?.trim() ||
       b.direccion?.trim() ||
       b.foto ||
-      b.lat !== null ||
-      b.lon !== null ||
+      b.lat != null ||
+      b.lon != null ||
       (b.sector && b.sector !== 'Centro Histórico'),
     );
   }

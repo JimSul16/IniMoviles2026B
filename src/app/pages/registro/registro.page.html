@@ -47,7 +47,7 @@
         <div class="banner-borrador-header">
           <ion-icon name="clipboard-outline" class="banner-borrador-icono" aria-hidden="true"></ion-icon>
           <div class="banner-borrador-texto">
-            <strong>Registro incompleto recuperado (R8)</strong>
+            <strong>Registro incompleto recuperado</strong>
             <p>Se encontró un reporte de <em>{{ borradorPendiente()!.tipo }}</em> sin guardar.</p>
           </div>
         </div>
@@ -106,7 +106,7 @@
         @if (esFotoObligatoria()) {
         <div class="aviso-prio-alta" role="note">
           <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
-          <span>Prioridad ALTA seleccionada: La fotografía de evidencia es obligatoria por normativa (R5).</span>
+          <span>Prioridad ALTA seleccionada: La fotografía de evidencia es obligatoria por normativa municipal.</span>
         </div>
         } @if (errores().prioridad) {
         <span class="campo-error" role="alert">{{ errores().prioridad }}</span>
@@ -196,7 +196,7 @@
         @if (esBache()) {
         <div class="aviso-bache-coordenadas" role="note">
           <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
-          <span>Tipo BACHE: Coordenadas obligatorias (R7). Si el sensor falla, ingréselas manualmente.</span>
+          <span>Tipo BACHE: Coordenadas obligatorias. Si el sensor falla, ingréselas manualmente.</span>
         </div>
         }
 

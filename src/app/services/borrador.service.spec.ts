@@ -82,6 +82,20 @@ describe('BorradorService (R8)', () => {
     expect(res2).toBeNull();
   });
 
+  it('esBorradorSustancial devuelve false si lat y lon son undefined en borrador vacio (R8 fix)', () => {
+    const vacioConUndefined = {
+      tipo: 'luminaria' as const,
+      descripcion: '',
+      direccion: '',
+      sector: 'Centro Histórico',
+      prioridad: 'media' as const,
+      lat: undefined,
+      lon: undefined,
+      fechaGuardado: '2026-10-28T14:30:00Z',
+    };
+    expect(service.esBorradorSustancial(vacioConUndefined)).toBe(false);
+  });
+
   it('elimina el borrador de Preferences', async () => {
     await service.eliminarBorrador();
     expect(Preferences.remove).toHaveBeenCalledWith({

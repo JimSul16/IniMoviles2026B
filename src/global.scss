@@ -3,22 +3,22 @@
  */
 
 /* Core CSS required for Ionic components to work properly */
-@import "@ionic/angular/css/core.css";
+@import '@ionic/angular/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
-@import "@ionic/angular/css/normalize.css";
-@import "@ionic/angular/css/structure.css";
-@import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
 
 /* Optional CSS utils that can be commented out */
-@import "@ionic/angular/css/padding.css";
-@import "@ionic/angular/css/float-elements.css";
-@import "@ionic/angular/css/text-alignment.css";
-@import "@ionic/angular/css/text-transformation.css";
-@import "@ionic/angular/css/flex-utils.css";
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/float-elements.css';
+@import '@ionic/angular/css/text-alignment.css';
+@import '@ionic/angular/css/text-transformation.css';
+@import '@ionic/angular/css/flex-utils.css';
 
-@import "@ionic/angular/css/palettes/dark.system.css";
+@import '@ionic/angular/css/palettes/dark.system.css';
 
 /* ==========================================================================
    ESTILOS COMPARTIDOS — INSPECCIÓN DE CAMPO (URBANINSPECT)
@@ -44,8 +44,12 @@
 
 .conteo-badge {
   display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
+  background: rgba(14, 116, 144, 0.08);
+  border: 1px solid rgba(14, 116, 144, 0.2);
+  border-radius: 9999px;
+  padding: 3px 10px;
 }
 
 .conteo-num {
@@ -113,7 +117,9 @@
   border-radius: 6px;
   min-width: 36px;
   min-height: 36px;
-  transition: color 0.15s ease, transform 0.1s ease;
+  transition:
+    color 0.15s ease,
+    transform 0.1s ease;
 
   &:active {
     transform: scale(0.92);
@@ -518,7 +524,9 @@
   color: inherit;
   min-height: 56px;
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
 
   &:active {
     transform: scale(0.99);
@@ -1361,6 +1369,19 @@
   gap: 2px;
 }
 
+.metrica-etiqueta {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--ion-color-medium, #64748b);
+  letter-spacing: 0.02em;
+}
+
+.metrica-valor {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ion-color-dark, #0f172a);
+}
+
 .alerta-lluvia-box {
   display: flex;
   align-items: flex-start;
@@ -1520,6 +1541,19 @@
   .aviso-bache-coordenadas,
   .alerta-gps {
     color: #fbbf24;
+  }
+
+  .conteo-badge {
+    background: rgba(45, 212, 191, 0.12);
+    border-color: rgba(45, 212, 191, 0.25);
+  }
+
+  .metrica-valor {
+    color: #f1f5f9;
+  }
+
+  .metrica-etiqueta {
+    color: #94a3b8;
   }
 
   .incidencia-card,

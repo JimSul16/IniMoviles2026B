@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import type { Observable } from 'rxjs';
-import { catchError, throwError } from 'rxjs';
+import { catchError, tap, throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import type { EstadoIncidencia, Incidencia } from '../models/incidencia.model';
@@ -18,6 +18,22 @@ export interface ErrorConsultaIncidencias {
 export class IncidenciasService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.incidenciasApiUrl;
+
+  private _nuevaIncidenciaRegistrada = false;
+
+  get nuevaIncidenciaRegistrada(): boolean {
+    return this._nuevaIncidenciaRegistrada;
+  }
+
+  marcarNuevaIncidencia(): void {
+    this._nuevaIncidenciaRegistrada = true;
+  }
+
+  consumirNuevaIncidencia(): boolean {
+    const valor = this._nuevaIncidenciaRegistrada;
+    this._nuevaIncidenciaRegistrada = false;
+    return valor;
+  }
 
   /**
    * Consulta una página remota de incidencias en MockAPI (R2, R3).
@@ -69,6 +85,9 @@ export class IncidenciasService {
    */
   crearIncidencia(incidencia: Omit<Incidencia, 'id'>): Observable<Incidencia> {
     return this.http.post<Incidencia>(this.apiUrl, incidencia).pipe(
+      tap(() => {
+        this.marcarNuevaIncidencia();
+      }),
       catchError((error: unknown) => {
         return throwError(() => this.mapearError(error));
       }),
@@ -97,6 +116,22 @@ export class IncidenciasService {
           tipo: 'no_encontrado',
           status: 404,
           mensaje: `La incidencia${detalleId} no fue encontrada en el sistema municipal (código 404).`,
+        };
+      }
+
+      if (error.status === 429) {
+        return {
+          tipo: 'desconocido',
+          status: 429,
+          mensaje: 'Se agotó la cuota del servicio municipal, espere unos minutos para volver a consultar.',
+        };
+      }
+
+      if (error.status === 413) {
+        return {
+          tipo: 'desconocido',
+          status: 413,
+          mensaje: 'La fotografía supera el tamaño permitido por el servidor municipal.',
         };
       }
 

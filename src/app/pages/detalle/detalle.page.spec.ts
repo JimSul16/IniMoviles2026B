@@ -162,7 +162,7 @@ describe('DetallePage (R9)', () => {
     component.cambiarEstado('en_proceso');
     fixture.detectChanges();
 
-    expect(mockIncidenciasService.actualizarEstado).toHaveBeenCalledWith('7', 'en_proceso', '');
+    expect(mockIncidenciasService.actualizarEstado).toHaveBeenCalledWith('7', 'en_proceso', undefined);
     expect(component.incidencia()?.estado).toBe('en_proceso');
     expect(component.mensajeExito()).toContain('En proceso');
   });

@@ -108,6 +108,17 @@ describe('ListadoPage', () => {
     expect(compiled.textContent).toContain('INC-10');
   });
 
+  it('no reinicia a la página 1 en ionViewWillEnter si la lista ya tiene datos y no hay nueva alta', () => {
+    component.ionViewWillEnter();
+    expect(mockIncidenciasService.getIncidencias).toHaveBeenCalledTimes(1);
+
+    mockIncidenciasService.getIncidencias.mockClear();
+
+    // Inspector navega a detalle y regresa a la vista
+    component.ionViewWillEnter();
+    expect(mockIncidenciasService.getIncidencias).not.toHaveBeenCalled();
+  });
+
   it('concatena la página 2 incrementalmente con cargarMas (R3)', () => {
     component.ionViewWillEnter();
     fixture.detectChanges();

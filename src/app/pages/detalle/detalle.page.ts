@@ -181,8 +181,9 @@ export class DetallePage implements ViewWillEnter {
     this.guardando.set(true);
 
     const textoObs = this.observacion().trim();
+    const observacionAEnviar = textoObs ? textoObs : undefined;
 
-    const req$ = this.incidenciasService.actualizarEstado(item.id, nuevoEstado, textoObs);
+    const req$ = this.incidenciasService.actualizarEstado(item.id, nuevoEstado, observacionAEnviar);
     const sub$ = this.destroyRef ? req$.pipe(takeUntilDestroyed(this.destroyRef)) : req$;
 
     sub$.subscribe({
