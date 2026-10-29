@@ -197,7 +197,7 @@ describe('SeguimientoPage (R1 — Seguimiento local persistente)', () => {
 
   it('al pulsar ver detalle navega hacia la ficha técnica de la incidencia', () => {
     component.irADetalle('4');
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/incidencias', '4']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/incidencia', '4']);
   });
 
   it('al pulsar ver listado navega hacia /incidencias', () => {

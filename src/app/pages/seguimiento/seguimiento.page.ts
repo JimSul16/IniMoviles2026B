@@ -126,7 +126,7 @@ export class SeguimientoPage implements ViewWillEnter {
   }
 
   irADetalle(id: string | number): void {
-    this.router.navigate(['/incidencias', id]);
+    this.router.navigate(['/incidencia', id]);
   }
 
   irAlListado(): void {
