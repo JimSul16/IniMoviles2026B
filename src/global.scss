@@ -1503,6 +1503,25 @@
 
 /* Modo oscuro contrastes */
 @media (prefers-color-scheme: dark) {
+  .campo-error,
+  .campo-obligatorio-aviso,
+  .marca-obligatoria,
+  .alerta-error-box,
+  .aviso-prio-alta,
+  .campo-error-box {
+    color: #fca5a5;
+  }
+
+  .tipo-badge {
+    background: rgba(45, 212, 191, 0.15);
+    color: #5eead4;
+  }
+
+  .aviso-bache-coordenadas,
+  .alerta-gps {
+    color: #fbbf24;
+  }
+
   .incidencia-card,
   .hero-card,
   .indicador-panel,
