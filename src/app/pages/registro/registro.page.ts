@@ -137,6 +137,7 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
   readonly errorGps = signal<string | null>(null);
   readonly errorServidor = signal<string | null>(null);
   readonly incidenciaCreada = signal<string | null>(null);
+  readonly idIncidenciaCreada = signal<string | null>(null);
 
   // Consulta meteorológica en tiempo real (R4)
   readonly clima = signal<ClimaInfo | null>(null);
@@ -384,6 +385,7 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
         try {
           const codigo = codigoDe(creada);
           this.incidenciaCreada.set(codigo);
+          this.idIncidenciaCreada.set(String(creada.id));
           void this.borradorService.eliminarBorrador();
           this.limpiarFormulario();
         } finally {
@@ -485,5 +487,17 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
 
   irAlListado(): void {
     this.router.navigate(['/incidencias']);
+  }
+
+  verFichaCreada(): void {
+    const id = this.idIncidenciaCreada();
+    if (id) {
+      this.router.navigate(['/incidencia', id]);
+    }
+  }
+
+  registrarOtraIncidencia(): void {
+    this.incidenciaCreada.set(null);
+    this.idIncidenciaCreada.set(null);
   }
 }

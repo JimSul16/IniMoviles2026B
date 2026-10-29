@@ -561,6 +561,20 @@ describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
 
     expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
     expect(mockBorradorService.eliminarBorrador).toHaveBeenCalled();
+    expect(component.idIncidenciaCreada()).toBe('27');
+  });
+
+  it('tras guardar exitosamente permite navegar directamente a la ficha con "Ver la ficha" (R5)', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate');
+
+    component.idIncidenciaCreada.set('27');
+    component.incidenciaCreada.set('INC-27');
+    fixture.detectChanges();
+
+    component.verFichaCreada();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/incidencia', '27']);
   });
 
   it('consulta el reporte meteorológico en tiempo real al solicitarlo (R4)', async () => {

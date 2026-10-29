@@ -22,11 +22,17 @@
       </p>
 
       <div class="botones-fila-exito">
-        <ion-button (click)="irAlListado()" color="primary" fill="solid" class="accion-btn">
+        @if (idIncidenciaCreada()) {
+        <ion-button (click)="verFichaCreada()" color="success" fill="solid" class="accion-btn">
+          <ion-icon name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
+          Ver la ficha
+        </ion-button>
+        }
+        <ion-button (click)="irAlListado()" color="primary" fill="outline" class="accion-btn">
           <ion-icon name="list-outline" slot="start" aria-hidden="true"></ion-icon>
           Ver en el Listado
         </ion-button>
-        <ion-button (click)="incidenciaCreada.set(null)" fill="outline" color="primary" class="accion-btn">
+        <ion-button (click)="registrarOtraIncidencia()" fill="clear" color="medium" class="accion-btn">
           <ion-icon name="add-circle-outline" slot="start" aria-hidden="true"></ion-icon>
           Registrar otra incidencia
         </ion-button>
