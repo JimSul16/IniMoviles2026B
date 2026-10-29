@@ -3,6 +3,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import type { ViewWillEnter } from '@ionic/angular';
 import {
   IonBackButton,
   IonButton,
@@ -17,6 +18,8 @@ import {
 
 import type { PrioridadIncidencia, TipoIncidencia } from '../../models/incidencia.model';
 import { codigoDe, PRIORIDADES, prioridadExigeFoto, TIPOS } from '../../models/incidencia.model';
+import type { BorradorRegistro } from '../../services/borrador.service';
+import { BorradorService } from '../../services/borrador.service';
 import type { ErrorCamara } from '../../services/camara.service';
 import { CamaraService } from '../../services/camara.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
@@ -66,10 +69,11 @@ export interface ErroresFormulario {
     IonSpinner,
   ],
 })
-export class RegistroPage {
+export class RegistroPage implements ViewWillEnter {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly camaraService = inject(CamaraService);
   private readonly ubicacionService = inject(UbicacionService);
+  private readonly borradorService = inject(BorradorService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef, { optional: true });
 
@@ -86,11 +90,12 @@ export class RegistroPage {
   readonly lat = signal<number | null>(null);
   readonly lon = signal<number | null>(null);
 
-  // Estados de validación y envío
+  // Estados de validación, envío y borrador (R8)
   readonly errores = signal<ErroresFormulario>({});
   readonly enviando = signal<boolean>(false);
   readonly capturandoFoto = signal<boolean>(false);
   readonly obteniendoGps = signal<boolean>(false);
+  readonly borradorPendiente = signal<BorradorRegistro | null>(null);
   readonly errorPermisoCamara = signal<string | null>(null);
   readonly errorGps = signal<string | null>(null);
   readonly errorServidor = signal<string | null>(null);
@@ -108,6 +113,51 @@ export class RegistroPage {
     'Villa Flora',
     'Chimbacalle',
   ];
+
+  async ionViewWillEnter(): Promise<void> {
+    // Si no hay datos en edición y existe un borrador guardado en el dispositivo,
+    // se le ofrece al usuario continuar o descartar (R8)
+    if (!this.descripcion().trim() && !this.direccion().trim() && !this.foto()) {
+      const borrador = await this.borradorService.obtenerBorrador();
+      if (borrador) {
+        this.borradorPendiente.set(borrador);
+      }
+    }
+  }
+
+  continuarBorrador(): void {
+    const b = this.borradorPendiente();
+    if (!b) return;
+
+    this.tipo.set(b.tipo);
+    this.descripcion.set(b.descripcion);
+    this.direccion.set(b.direccion);
+    this.sector.set(b.sector);
+    this.prioridad.set(b.prioridad);
+    this.foto.set(b.foto || '');
+    this.lat.set(b.lat ?? null);
+    this.lon.set(b.lon ?? null);
+    this.borradorPendiente.set(null);
+  }
+
+  async descartarBorrador(): Promise<void> {
+    await this.borradorService.eliminarBorrador();
+    this.borradorPendiente.set(null);
+    this.limpiarFormulario();
+  }
+
+  guardarBorradorActual(): void {
+    this.borradorService.guardarBorrador({
+      tipo: this.tipo(),
+      descripcion: this.descripcion(),
+      direccion: this.direccion(),
+      sector: this.sector(),
+      prioridad: this.prioridad(),
+      foto: this.foto() || null,
+      lat: this.lat(),
+      lon: this.lon(),
+    });
+  }
 
   esFotoObligatoria(): boolean {
     return prioridadExigeFoto(this.prioridad());
@@ -236,6 +286,7 @@ export class RegistroPage {
         try {
           const codigo = codigoDe(creada);
           this.incidenciaCreada.set(codigo);
+          void this.borradorService.eliminarBorrador();
           this.limpiarFormulario();
         } finally {
           this.enviando.set(false);

@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import type { Incidencia } from '../../models/incidencia.model';
+import { BorradorService } from '../../services/borrador.service';
 import { CamaraService } from '../../services/camara.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
@@ -11,7 +12,7 @@ import { UbicacionService } from '../../services/ubicacion.service';
 
 import { RegistroPage } from './registro.page';
 
-describe('RegistroPage (R5 + R6 + R7)', () => {
+describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
   let component: RegistroPage;
   let fixture: ComponentFixture<RegistroPage>;
   let mockIncidenciasService: {
@@ -23,6 +24,11 @@ describe('RegistroPage (R5 + R6 + R7)', () => {
   let mockUbicacionService: {
     obtenerPosicionActual: ReturnType<typeof vi.fn>;
     validarCoordenadas: (lat: number | null | undefined, lon: number | null | undefined) => boolean;
+  };
+  let mockBorradorService: {
+    obtenerBorrador: ReturnType<typeof vi.fn>;
+    guardarBorrador: ReturnType<typeof vi.fn>;
+    eliminarBorrador: ReturnType<typeof vi.fn>;
   };
 
   const nuevaRespuesta: Incidencia = {
@@ -55,6 +61,11 @@ describe('RegistroPage (R5 + R6 + R7)', () => {
         return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
       },
     };
+    mockBorradorService = {
+      obtenerBorrador: vi.fn().mockResolvedValue(null),
+      guardarBorrador: vi.fn().mockResolvedValue(undefined),
+      eliminarBorrador: vi.fn().mockResolvedValue(undefined),
+    };
 
     await TestBed.configureTestingModule({
       imports: [RegistroPage],
@@ -63,6 +74,7 @@ describe('RegistroPage (R5 + R6 + R7)', () => {
         { provide: IncidenciasService, useValue: mockIncidenciasService },
         { provide: CamaraService, useValue: mockCamaraService },
         { provide: UbicacionService, useValue: mockUbicacionService },
+        { provide: BorradorService, useValue: mockBorradorService },
       ],
     }).compileComponents();
 
@@ -350,5 +362,91 @@ describe('RegistroPage (R5 + R6 + R7)', () => {
       }),
     );
     expect(component.incidenciaCreada()).toBe('INC-29');
+  });
+
+  it('ofrece continuar o descartar si existe un borrador incompleto al reabrir el formulario (R8)', async () => {
+    mockBorradorService.obtenerBorrador.mockResolvedValue({
+      tipo: 'alcantarilla',
+      descripcion: 'Borrador rescatado del almacenamiento',
+      direccion: 'Av. Colón y 10 de Agosto',
+      sector: 'Mariscal Sucre',
+      prioridad: 'media',
+      foto: null,
+      lat: -0.19,
+      lon: -78.49,
+      fechaGuardado: '2026-10-28T10:00:00Z',
+    });
+
+    await component.ionViewWillEnter();
+    fixture.detectChanges();
+
+    expect(component.borradorPendiente()).toBeTruthy();
+    expect(component.borradorPendiente()?.descripcion).toBe('Borrador rescatado del almacenamiento');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Registro incompleto recuperado (R8)');
+    expect(compiled.textContent).toContain('Continuar reporte');
+    expect(compiled.textContent).toContain('Descartar');
+  });
+
+  it('al pulsar continuar restaura todos los datos del borrador en el formulario (R8)', async () => {
+    component.borradorPendiente.set({
+      tipo: 'bache',
+      descripcion: 'Bache con agua acumulada recuperado',
+      direccion: 'Calle Guayaquil N12',
+      sector: 'Centro Histórico',
+      prioridad: 'alta',
+      foto: 'data:image/jpeg;base64,fotoborrador',
+      lat: -0.22,
+      lon: -78.51,
+      fechaGuardado: '2026-10-28T10:00:00Z',
+    });
+
+    component.continuarBorrador();
+    fixture.detectChanges();
+
+    expect(component.tipo()).toBe('bache');
+    expect(component.descripcion()).toBe('Bache con agua acumulada recuperado');
+    expect(component.direccion()).toBe('Calle Guayaquil N12');
+    expect(component.sector()).toBe('Centro Histórico');
+    expect(component.prioridad()).toBe('alta');
+    expect(component.foto()).toBe('data:image/jpeg;base64,fotoborrador');
+    expect(component.lat()).toBe(-0.22);
+    expect(component.lon()).toBe(-78.51);
+    expect(component.borradorPendiente()).toBeNull();
+  });
+
+  it('al pulsar descartar borrador elimina el almacenamiento local y limpia el formulario (R8)', async () => {
+    component.borradorPendiente.set({
+      tipo: 'luminaria',
+      descripcion: 'Borrador a descartar',
+      direccion: 'Calle X',
+      sector: 'Quitumbe',
+      prioridad: 'baja',
+      fechaGuardado: '2026-10-28T10:00:00Z',
+    });
+
+    await component.descartarBorrador();
+    fixture.detectChanges();
+
+    expect(mockBorradorService.eliminarBorrador).toHaveBeenCalled();
+    expect(component.borradorPendiente()).toBeNull();
+    expect(component.descripcion()).toBe('');
+  });
+
+  it('al guardar exitosamente elimina el borrador local para no reaparecer (R8)', () => {
+    mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
+
+    component.tipo.set('luminaria');
+    component.descripcion.set('Luminaria reparada lista para reporte');
+    component.direccion.set('Av. Patria y 12 de Octubre');
+    component.sector.set('Mariscal Sucre');
+    component.prioridad.set('media');
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
+    expect(mockBorradorService.eliminarBorrador).toHaveBeenCalled();
   });
 });

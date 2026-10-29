@@ -35,6 +35,29 @@
     } @else {
     <!-- FORMULARIO DE REGISTRO (R5) -->
     <article class="formulario-card">
+      <!-- AVISO DE BORRADOR LOCAL PENDIENTE (R8) -->
+      @if (borradorPendiente()) {
+      <div class="banner-borrador-box" role="alert">
+        <div class="banner-borrador-header">
+          <ion-icon name="clipboard-outline" class="banner-borrador-icono" aria-hidden="true"></ion-icon>
+          <div class="banner-borrador-texto">
+            <strong>Registro incompleto recuperado (R8)</strong>
+            <p>Se encontró un reporte de <em>{{ borradorPendiente()!.tipo }}</em> sin guardar.</p>
+          </div>
+        </div>
+        <div class="banner-borrador-acciones">
+          <ion-button (click)="continuarBorrador()" color="primary" fill="solid" size="small" class="accion-btn">
+            <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+            Continuar reporte
+          </ion-button>
+          <ion-button (click)="descartarBorrador()" color="danger" fill="outline" size="small" class="accion-btn">
+            <ion-icon name="trash-outline" slot="start" aria-hidden="true"></ion-icon>
+            Descartar
+          </ion-button>
+        </div>
+      </div>
+      }
+
       <header class="formulario-cabecera">
         <h1 class="formulario-titulo">Nuevo Reporte de Inspección</h1>
         <p class="formulario-subtitulo">

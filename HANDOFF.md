@@ -12,10 +12,10 @@
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
 | **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
-| **Fase actual** | H cerrada · iniciando fase I (R8: borrador recuperable) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **50/50** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `fase-H: …` |
-| **🚦 Señal** | `FASE-H: commiteado — iniciando fase I (R8: borrador recuperable)` |
+| **Fase actual** | I cerrada · iniciando fase J (R4: consulta de clima real) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **59/59** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `0527b50` (H) · `fase-I: …` |
+| **🚦 Señal** | `FASE-I: commiteado — iniciando fase J (R4: clima real)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -437,6 +437,29 @@ Hecho:
      válidas, rangos y opcionalidad en otros tipos.
 BUILD: verde (build 0 warnings, lint 0 warnings, 50 unit tests pasando, 2 e2e pasando).
 Siguiente: Fase I (R8 — borrador local recuperable con @capacitor/preferences).
+```
+
+---
+
+## Bloque #14 — 🟪 gemini-ui (fase I cerrada: borrador recuperable R8)
+
+```
+Fase completada: I — borrador recuperable con persistencia local @capacitor/preferences (R8, 1,2 pts).
+Hecho:
+  1. Servicio de Borrador `BorradorService`: almacenamiento en `Preferences` con la clave
+     `urbaninspect_borrador_registro` para persistir estado completo del formulario
+     (tipo, descripción, dirección, sector, prioridad, foto, coordenadas y timestamp).
+  2. Detección automática al reabrir el formulario: en `ionViewWillEnter`, si existe un borrador
+     incompleto sustancial, se presenta banner superior accesible que ofrece CONTINUAR o DESCARTAR.
+  3. Continuar reporte: restaura todos los datos previamente diligenciados (evitando pérdida por
+     cierre involuntario de app o llamada telefónica).
+  4. Descartar reporte: purga el borrador de `Preferences` y resetea el formulario al estado limpio.
+  5. Limpieza automática tras envío: al registrar exitosamente la incidencia en MockAPI, el borrador
+     se elimina de forma inmediata para que el siguiente levantamiento empiece limpio.
+  6. Tests: 5 tests en `borrador.service.spec.ts` y 4 tests adicionales en `registro.page.spec.ts`
+     (total 18 tests en registro) verificando guardado, recuperación, restauración, descarte y depuración.
+BUILD: verde (build 0 warnings, lint 0 warnings, 59 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase J (R4 — consulta de clima real Open-Meteo antes de guardar).
 ```
 
 ---

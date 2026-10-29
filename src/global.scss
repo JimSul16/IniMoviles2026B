@@ -917,6 +917,54 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
+.banner-borrador-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.banner-borrador-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.banner-borrador-icono {
+  font-size: 1.6rem;
+  color: var(--ion-color-primary, #2563eb);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.banner-borrador-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    font-size: 0.95rem;
+    color: var(--ion-color-primary, #1e40af);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ion-color-dark, #1e293b);
+  }
+}
+
+.banner-borrador-acciones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 .formulario-cabecera {
   margin-bottom: 20px;
   border-bottom: 1px solid rgba(100, 116, 139, 0.15);
