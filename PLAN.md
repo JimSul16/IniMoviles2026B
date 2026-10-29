@@ -170,16 +170,17 @@ Esto es lo que nos costó trabajo la vez pasada. Casi todo el PDF de la activida
 | B — Scaffold + estructura + rutas + deps + siembra de datos | base | 🟦 MiMo | ✅ BUILD verde · 26 incidencias sembradas |
 | C — Listado de incidencias (8 campos, vacío, error) | R2 | 🟪 Gemini | ✅ `a666ea2` — verificado: BUILD verde, 11/11 tests |
 | **C' — Arreglos desbloqueantes** (nav mínima desde inicio, tema oscuro, guard + token en la recarga) | refuerzo R2/R10 | 🟪 Gemini | ✅ `502da3b` — verificado: BUILD verde, 16/16 tests, los 4 arreglos confirmados |
-| D — Paginación remota e incremental | R3 | 🟪 Gemini | ⬜ |
-| E — Detalle + transiciones de estado + observación | R9 | 🟪 Gemini | ⬜ |
-| F — Formulario de registro + validaciones | R5 | 🟪 Gemini | ⬜ |
-| G — Cámara, previsualización y permisos | R6 | 🟪 Gemini | ⬜ |
-| H — GPS + coordenadas manuales (bache) | R7 | 🟪 Gemini | ⬜ |
-| I — Borrador recuperable (continuar/descartar) | R8 | 🟪 Gemini | ⬜ |
-| J — Clima real antes de guardar + aviso > 5 mm | R4 | 🟪 Gemini | ⬜ |
-| K — Seguimiento local (Preferences) | R1 | 🟪 Gemini | ⬜ |
-| L — Inicio con indicadores + navegación + pulido | R10 | 🟪 Gemini | ⬜ |
-| Cierre — APK por terminal + README + evidencias | — | 🟦 MiMo | ⬜ |
+| D — Paginación remota e incremental | R3 | 🟪 Gemini | ✅ `118924c` |
+| E — Detalle + transiciones de estado + observación | R9 | 🟪 Gemini | ✅ `bfb4126` |
+| F — Formulario de registro + validaciones | R5 | 🟪 Gemini | ✅ `163a813` |
+| G — Cámara, previsualización y permisos | R6 | 🟪 Gemini | ✅ `9b3fa71` |
+| H — GPS + coordenadas manuales (bache) | R7 | 🟪 Gemini | ✅ `0527b50` |
+| I — Borrador recuperable (continuar/descartar) | R8 | 🟪 Gemini | ✅ `c704ca7` |
+| J — Clima real antes de guardar + aviso > 5 mm | R4 | 🟪 Gemini | ✅ `a2609ed` |
+| K — Seguimiento local (Preferences) | R1 | 🟪 Gemini | ✅ `2dfe6d1` |
+| L — Inicio con indicadores + navegación + pulido | R10 | 🟪 Gemini | ✅ `c72f0a5` |
+| M — Revisión DeepSeek (bloqueantes y demo) | R1..R10 | 🟪 Gemini | ✅ 93 tests verdes |
+| Cierre — APK por terminal + README + evidencias | — | 🟦 MiMo | 🟡 Turno de MiMo (permisos + APK) |
 
 ---
 

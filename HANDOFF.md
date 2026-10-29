@@ -11,11 +11,11 @@
 | Campo | Valor |
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
-| **Responsable ahora** | 🟩 **`deepseek-revisor`** — informe final antes de construcción de APK |
-| **Fase actual** | L cerrada (todas las fases funcionales D a L completadas) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **83/83** · `test:e2e` **2/2** |
+| **Responsable ahora** | 🟦 **`mimo-infra`** — permisos Android y construcción de APK |
+| **Fase actual** | Revisión final cerrada (bloqueantes y defectos de demo resueltos) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **93/93** · `test:e2e` **2/2** |
 | **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `0527b50` (H) · `c704ca7` (I) · `a2609ed` (J) · `2dfe6d1` (K) · `fase-L: …` |
-| **🚦 Señal** | `FASE-L: commiteado — turno de DeepSeek (informe final) y luego MiMo construye el APK` |
+| **🚦 Señal** | `REVISION-FINAL: commiteado — turno de MiMo (permisos en AndroidManifest.xml y build de APK)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -546,6 +546,49 @@ Hecho:
        (12,8 / 12,8 pts).
 BUILD: verde (build 0 warnings, lint 0 warnings, 83 unit tests pasando, 2 e2e pasando).
 Siguiente: Turno de DeepSeek para el informe final de revisión, tras el cual MiMo generará el APK.
+```
+
+---
+
+## Bloque #18 — 🟪 gemini-ui (resolución de revisión final de DeepSeek: 3 bloqueantes + 6 defectos de demo)
+
+```
+Fase completada: Revisión final de DeepSeek (3 bloqueantes en src/** + 6 defectos de demo resueltos).
+Hecho:
+  1. R8 (1,2 pts) — Autoguardado reactivo de borrador:
+     - Implementado effect() en el constructor de RegistroPage que observa las 8 señales y dispara
+       guardarBorradorActual() con debounce de 500 ms, omitiendo formularios vacíos o en envío.
+     - Implementado ionViewWillLeave() que persiste inmediatamente el borrador antes de salir.
+     - Tests unitarios añadidos comprobando el debounce con fake timers y el guardado en salida.
+  2. R5/R6 (protege 1,6 pts) — Compresión de imágenes de galería:
+     - onFileSelected() ahora procesa el dataURL con camaraService.asegurarLimiteTamanio(result, 70)
+       para prevenir error 413 Payload Too Large en MockAPI, y resetea input.value = ''.
+  3. R10 (0,8 pts) — Indicadores reales en pantalla de inicio:
+     - InicioPage.cargarIndicadores() ampliado a getIncidencias(1, 100) para computar el conteo
+       total real (26+) y reflejar altas y actualizaciones sin quedar congelado en 20.
+  4. RUTA ROTA (protege R1/R10) — Navegación de seguimiento:
+     - Corregido irADetalle en SeguimientoPage hacia /incidencia/:id en singular.
+  5. DOBLE POST (protege 1,6 pts) — Bloqueo de envíos concurrentes:
+     - enviando.set(true) activado antes del await consultarClimaZona(), y liberado en error de validación.
+  6. R4 (0,8 pts) — Eliminación de datos simulados/fijos en clima:
+     - ClimaService lanza ErrorClima si res?.current o sus métricas no son números válidos,
+       activando el aviso informativo no bloqueante en la interfaz.
+  7. MODO OSCURO (accesibilidad visual):
+     - Corregidos contrastes de validación (#fca5a5), badges de tipo (#5eead4 sobre teal) y avisos
+       geográficos (#fbbf24) en @media (prefers-color-scheme: dark).
+  8. R5 (visibilidad de altas):
+     - Guardado id en idIncidenciaCreada y añadido botón "Ver la ficha" en la pantalla de éxito
+       que navega directamente al nuevo expediente /incidencia/<id>.
+  9. Menores resueltos:
+     - Eliminada tautología en listado.page.html.
+     - listado.page.ts solo recarga si la lista está vacía o si hubo una nueva alta (consumirNuevaIncidencia()).
+     - Corregida verificación != null en borrador.service.ts para manejar undefined.
+     - detalle.page.ts omite enviar observacion: '' para no borrar notas previas.
+     - Mapeados errores HTTP 429 ("cuota agotada") y 413 ("fotografía supera el tamaño") en IncidenciasService.
+     - Añadidos estilos dedicados para .metrica-etiqueta, .metrica-valor y .conteo-badge.
+     - Retiradas etiquetas (R5), (R8), (R9) visibles en la interfaz.
+BUILD: verde (npm run build 0 warnings · npm run lint 0 warnings · test:unit 93/93 · test:e2e 2/2).
+Siguiente: 🟦 MiMo — Añadir los 2 permisos de ubicación en AndroidManifest.xml (ACCESS_FINE_LOCATION y ACCESS_COARSE_LOCATION) y construir el APK final.
 ```
 
 ---
