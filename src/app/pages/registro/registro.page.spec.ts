@@ -1,7 +1,7 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 import type { Incidencia } from '../../models/incidencia.model';
 import { BorradorService } from '../../services/borrador.service';
@@ -369,6 +369,43 @@ describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
 
     expect(mockIncidenciasService.crearIncidencia).not.toHaveBeenCalled();
     expect(component.errores().coordenadas).toBeDefined();
+  });
+
+  it('protege contra doble POST accidental bloqueando llamadas concurrentes (R5)', async () => {
+    let resolverClima!: (val: unknown) => void;
+    mockClimaService.consultarClima.mockReturnValue(
+      new Observable((obs) => {
+        resolverClima = (data) => {
+          obs.next(data);
+          obs.complete();
+        };
+      }),
+    );
+    mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
+
+    component.tipo.set('luminaria');
+    component.descripcion.set('Luminaria intermitente');
+    component.direccion.set('Av. Amazonas');
+    component.sector.set('Iñaquito');
+    component.prioridad.set('media');
+
+    const p1 = component.guardar();
+    expect(component.enviando()).toBe(true);
+
+    const p2 = component.guardar();
+
+    resolverClima({
+      temperatura: 16,
+      precipitacion: 0,
+      codigoWmo: 0,
+      descripcion: 'Despejado',
+      alertaLluvia: false,
+      icono: 'sunny-outline',
+    });
+
+    await Promise.all([p1, p2]);
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalledTimes(1);
   });
 
   it('en otros tipos de incidencia las coordenadas son opcionales y permite guardar sin ellas', async () => {

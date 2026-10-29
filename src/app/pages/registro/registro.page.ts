@@ -350,8 +350,10 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
     }
 
     this.errorServidor.set(null);
+    this.enviando.set(true);
 
     if (!this.validar()) {
+      this.enviando.set(false);
       return;
     }
 
@@ -359,8 +361,6 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
     if (!this.climaConsultado() && !this.clima()) {
       await this.consultarClimaZona();
     }
-
-    this.enviando.set(true);
 
     const nuevaIncidencia = {
       tipo: this.tipo(),
