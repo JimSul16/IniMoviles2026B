@@ -4,7 +4,7 @@ import type { Observable } from 'rxjs';
 import { catchError, throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
-import type { Incidencia } from '../models/incidencia.model';
+import type { EstadoIncidencia, Incidencia } from '../models/incidencia.model';
 
 export interface ErrorConsultaIncidencias {
   tipo: 'red' | 'no_encontrado' | 'desconocido';
@@ -20,8 +20,7 @@ export class IncidenciasService {
   private readonly apiUrl = environment.incidenciasApiUrl;
 
   /**
-   * Consulta una página remota de incidencias en MockAPI.
-   * En la fase C se consulta la primera página con límite establecido por environment.pageSize.
+   * Consulta una página remota de incidencias en MockAPI (R2, R3).
    */
   getIncidencias(page = 1, limit = environment.pageSize): Observable<Incidencia[]> {
     const params = new HttpParams().set('page', page.toString()).set('limit', limit.toString());
@@ -34,11 +33,54 @@ export class IncidenciasService {
   }
 
   /**
+   * Obtiene el detalle de una incidencia específica por su ID de MockAPI (R9).
+   */
+  getIncidenciaById(id: string | number): Observable<Incidencia> {
+    return this.http.get<Incidencia>(`${this.apiUrl}/${id}`).pipe(
+      catchError((error: unknown) => {
+        return throwError(() => this.mapearError(error, id));
+      }),
+    );
+  }
+
+  /**
+   * Actualiza el estado y opcionalmente la observación técnica de una incidencia (R9).
+   * Persiste el cambio con PATCH hacia MockAPI.
+   */
+  actualizarEstado(
+    id: string | number,
+    nuevoEstado: EstadoIncidencia,
+    observacion?: string | null,
+  ): Observable<Incidencia> {
+    const body: Partial<Incidencia> = {
+      estado: nuevoEstado,
+      ...(observacion !== undefined ? { observacion } : {}),
+    };
+
+    return this.http.patch<Incidencia>(`${this.apiUrl}/${id}`, body).pipe(
+      catchError((error: unknown) => {
+        return throwError(() => this.mapearError(error, id));
+      }),
+    );
+  }
+
+  /**
+   * Registra una nueva incidencia en MockAPI (R5).
+   */
+  crearIncidencia(incidencia: Omit<Incidencia, 'id'>): Observable<Incidencia> {
+    return this.http.post<Incidencia>(this.apiUrl, incidencia).pipe(
+      catchError((error: unknown) => {
+        return throwError(() => this.mapearError(error));
+      }),
+    );
+  }
+
+  /**
    * Transforma errores HTTP en estructuras de error tipadas y legibles,
    * diferenciando explícitamente caídas de red (status 0) de recurso no encontrado (404)
    * o fallos del servidor.
    */
-  private mapearError(error: unknown): ErrorConsultaIncidencias {
+  private mapearError(error: unknown, id?: string | number): ErrorConsultaIncidencias {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 0) {
         return {
@@ -50,11 +92,11 @@ export class IncidenciasService {
       }
 
       if (error.status === 404) {
+        const detalleId = id ? ` INC-${id}` : '';
         return {
           tipo: 'no_encontrado',
           status: 404,
-          mensaje:
-            'El recurso solicitado no fue encontrado en el servidor municipal (código 404). Verifique la ruta del servicio (/API).',
+          mensaje: `La incidencia${detalleId} no fue encontrada en el sistema municipal (código 404).`,
         };
       }
 
@@ -68,7 +110,7 @@ export class IncidenciasService {
     return {
       tipo: 'desconocido',
       status: -1,
-      mensaje: 'Ocurrió un error inesperado al consultar el catálogo de incidencias.',
+      mensaje: 'Ocurrió un error inesperado al procesar la solicitud con el servidor municipal.',
     };
   }
 }

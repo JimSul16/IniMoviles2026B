@@ -132,4 +132,97 @@ describe('IncidenciasService', () => {
     expect(errorCapturado?.tipo).toBe('desconocido');
     expect(errorCapturado?.status).toBe(500);
   });
+
+  it('obtiene una incidencia por ID (R9)', () => {
+    let resultado: Incidencia | undefined;
+
+    service.getIncidenciaById('1').subscribe({
+      next: (data) => {
+        resultado = data;
+      },
+    });
+
+    const req = httpTesting.expectOne(`${environment.incidenciasApiUrl}/1`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockIncidencias[0]);
+
+    expect(resultado).toEqual(mockIncidencias[0]);
+  });
+
+  it('clasifica error 404 al buscar incidencia por ID (R9)', () => {
+    let errorCapturado: ErrorConsultaIncidencias | undefined;
+
+    service.getIncidenciaById('999').subscribe({
+      next: () => {
+        throw new Error('No debería tener éxito');
+      },
+      error: (err: ErrorConsultaIncidencias) => {
+        errorCapturado = err;
+      },
+    });
+
+    const req = httpTesting.expectOne(`${environment.incidenciasApiUrl}/999`);
+    req.flush('Not Found', { status: 404, statusText: 'Not Found' });
+
+    expect(errorCapturado).toBeDefined();
+    expect(errorCapturado?.tipo).toBe('no_encontrado');
+    expect(errorCapturado?.mensaje).toContain('INC-999');
+  });
+
+  it('actualiza el estado y observación con PATCH (R9)', () => {
+    let resultado: Incidencia | undefined;
+
+    service.actualizarEstado('1', 'resuelta', 'Reparación de luminaria completada por cuadrilla').subscribe({
+      next: (data) => {
+        resultado = data;
+      },
+    });
+
+    const req = httpTesting.expectOne(`${environment.incidenciasApiUrl}/1`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({
+      estado: 'resuelta',
+      observacion: 'Reparación de luminaria completada por cuadrilla',
+    });
+
+    const actualizada: Incidencia = {
+      ...mockIncidencias[0],
+      estado: 'resuelta',
+      observacion: 'Reparación de luminaria completada por cuadrilla',
+    };
+    req.flush(actualizada);
+
+    expect(resultado?.estado).toBe('resuelta');
+    expect(resultado?.observacion).toBe('Reparación de luminaria completada por cuadrilla');
+  });
+
+  it('crea una nueva incidencia con POST (R5)', () => {
+    let resultado: Incidencia | undefined;
+    const nueva = {
+      tipo: 'bache' as const,
+      descripcion: 'Bache grande en la calzada',
+      direccion: 'Av. América y Colón',
+      sector: 'Mariscal Sucre',
+      fecha: '2026-10-28T10:00:00',
+      estado: 'pendiente' as const,
+      prioridad: 'alta' as const,
+      foto: 'data:image/jpeg;base64,sample',
+      lat: -0.2,
+      lon: -78.5,
+      observacion: '',
+    };
+
+    service.crearIncidencia(nueva).subscribe({
+      next: (data) => {
+        resultado = data;
+      },
+    });
+
+    const req = httpTesting.expectOne(environment.incidenciasApiUrl);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(nueva);
+    req.flush({ ...nueva, id: '27' });
+
+    expect(resultado?.id).toBe('27');
+  });
 });

@@ -3,20 +3,263 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/incidencias" text="Volver"></ion-back-button>
     </ion-buttons>
-    <ion-title>Detalle de incidencia</ion-title>
+    <ion-title>Ficha Técnica · {{ obtenerCodigo() }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="contenedor-principal">
-    <div class="estado-box">
-      <div class="icono-circulo vacio">
-        <ion-icon name="document-text-outline" class="estado-icon" aria-hidden="true"></ion-icon>
-      </div>
-      <h2 class="estado-titulo">Detalle de incidencia {{ codigo }}</h2>
-      <p class="estado-descripcion">
-        Información técnica, evidencia fotográfica y registro de observaciones de la infraestructura.
-      </p>
+    <!-- 1. ESTADO DE CARGA -->
+    @if (estadoVisual() === 'cargando') {
+    <div class="estado-box" role="status" aria-live="polite">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <h2 class="estado-titulo">Consultando expediente municipal...</h2>
+      <p class="estado-descripcion">Obteniendo detalles técnicos de la incidencia {{ obtenerCodigo() }}.</p>
     </div>
+    }
+
+    <!-- 2. ESTADO DE ERROR (404 vs RED) -->
+    @if (estadoVisual() === 'error') {
+    <div class="estado-box" role="alert" aria-live="assertive">
+      <div class="icono-circulo error">
+        <ion-icon
+          [name]="errorInfo()?.tipo === 'no_encontrado' ? 'alert-circle-outline' : 'cloud-offline-outline'"
+          class="estado-icon"
+          aria-hidden="true"
+        ></ion-icon>
+      </div>
+      <h2 class="estado-titulo">
+        {{ errorInfo()?.tipo === 'no_encontrado' ? 'Incidencia no encontrada' : 'Problema de conexión' }}
+      </h2>
+      <p class="estado-descripcion">
+        {{ errorInfo()?.mensaje || 'No fue posible cargar los datos de la incidencia.' }}
+      </p>
+
+      @if (errorInfo()?.tipo === 'no_encontrado') {
+      <ion-button routerLink="/incidencias" fill="solid" color="primary" class="accion-btn">
+        <ion-icon name="list-outline" slot="start" aria-hidden="true"></ion-icon>
+        Volver al listado
+      </ion-button>
+      } @else {
+      <ion-button (click)="cargarDetalle()" fill="solid" color="primary" class="accion-btn">
+        <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
+        Reintentar consulta
+      </ion-button>
+      }
+    </div>
+    }
+
+    <!-- 3. ESTADO DE ÉXITO: FICHA TÉCNICA COMPLETA -->
+    @if (estadoVisual() === 'exito' && incidencia()) {
+    <article class="detalle-card" aria-label="Ficha de la incidencia">
+      <!-- CABECERA: CÓDIGO, ESTADO Y PRIORIDAD -->
+      <header class="detalle-cabecera">
+        <div class="detalle-badges">
+          <span class="codigo-chip">{{ obtenerCodigo() }}</span>
+          <span
+            class="estado-badge"
+            [ngClass]="'estado-' + incidencia()!.estado"
+            [attr.aria-label]="'Estado: ' + obtenerEstadoInfo(incidencia()!.estado).etiqueta"
+          >
+            <ion-icon [name]="obtenerEstadoInfo(incidencia()!.estado).icono" aria-hidden="true"></ion-icon>
+            {{ obtenerEstadoInfo(incidencia()!.estado).etiqueta }}
+          </span>
+          <span
+            class="prioridad-badge"
+            [ngClass]="'prioridad-' + incidencia()!.prioridad"
+            [attr.aria-label]="'Prioridad: ' + obtenerPrioridadInfo(incidencia()!.prioridad).etiqueta"
+          >
+            <ion-icon [name]="obtenerPrioridadInfo(incidencia()!.prioridad).icono" aria-hidden="true"></ion-icon>
+            Prioridad {{ obtenerPrioridadInfo(incidencia()!.prioridad).etiqueta }}
+          </span>
+        </div>
+
+        <h1 class="detalle-tipo-titulo">
+          <ion-icon [name]="obtenerTipoInfo(incidencia()!.tipo).icono" aria-hidden="true"></ion-icon>
+          {{ obtenerTipoInfo(incidencia()!.tipo).etiqueta }}
+        </h1>
+      </header>
+
+      <!-- FOTOGRAFÍA DE EVIDENCIA (CAMPO 8) -->
+      <section class="detalle-seccion-foto" aria-label="Evidencia fotográfica">
+        <h2 class="seccion-subtitulo">Evidencia fotográfica</h2>
+        @if (incidencia()!.foto && !fotoRota()) {
+        <div class="detalle-foto-marco">
+          <img
+            [src]="incidencia()!.foto"
+            alt="Fotografía de evidencia en campo para la incidencia {{ obtenerCodigo() }}"
+            class="detalle-foto-img"
+            (error)="fotoRota.set(true)"
+          />
+        </div>
+        } @else {
+        <div class="foto-sin-evidencia" role="status">
+          <ion-icon name="image-outline" class="sin-foto-icon" aria-hidden="true"></ion-icon>
+          <span>Sin evidencia fotográfica registrada en la inspección</span>
+        </div>
+        }
+      </section>
+
+      <!-- DESCRIPCIÓN (CAMPO 3) -->
+      <section class="detalle-seccion" aria-label="Descripción del daño">
+        <h2 class="seccion-subtitulo">Descripción del reporte</h2>
+        <div class="descripcion-caja">
+          <p class="descripcion-parrafo">{{ incidencia()!.descripcion }}</p>
+        </div>
+      </section>
+
+      <!-- DATOS DE CAMPO: DIRECCIÓN, SECTOR, FECHA, COORDENADAS -->
+      <section class="detalle-seccion" aria-label="Datos de ubicación y registro">
+        <h2 class="seccion-subtitulo">Datos de localización y registro</h2>
+        <div class="datos-grid">
+          <div class="dato-fila">
+            <ion-icon name="location-outline" class="dato-icono" aria-hidden="true"></ion-icon>
+            <div class="dato-cuerpo">
+              <span class="dato-etiqueta">Dirección</span>
+              <span class="dato-valor">{{ incidencia()!.direccion }}</span>
+            </div>
+          </div>
+
+          <div class="dato-fila">
+            <ion-icon name="business-outline" class="dato-icono" aria-hidden="true"></ion-icon>
+            <div class="dato-cuerpo">
+              <span class="dato-etiqueta">Sector</span>
+              <span class="dato-valor">{{ incidencia()!.sector }}</span>
+            </div>
+          </div>
+
+          <div class="dato-fila">
+            <ion-icon name="calendar-outline" class="dato-icono" aria-hidden="true"></ion-icon>
+            <div class="dato-cuerpo">
+              <span class="dato-etiqueta">Fecha de reporte</span>
+              <span class="dato-valor">{{ formatearFecha(incidencia()!.fecha) }}</span>
+            </div>
+          </div>
+
+          @if (incidencia()!.lat && incidencia()!.lon) {
+          <div class="dato-fila">
+            <ion-icon name="navigate-outline" class="dato-icono" aria-hidden="true"></ion-icon>
+            <div class="dato-cuerpo">
+              <span class="dato-etiqueta">Coordenadas GPS</span>
+              <span class="dato-valor">{{ incidencia()!.lat }}, {{ incidencia()!.lon }}</span>
+            </div>
+          </div>
+          }
+        </div>
+      </section>
+
+      <!-- OBSERVACIÓN TÉCNICA REGISTRADA PREVIAMENTE -->
+      @if (incidencia()!.observacion) {
+      <section class="detalle-seccion" aria-label="Observación técnica archivada">
+        <h2 class="seccion-subtitulo">Observación técnica archivada</h2>
+        <div class="observacion-caja archivada">
+          <ion-icon name="chatbox-ellipses-outline" aria-hidden="true"></ion-icon>
+          <p>{{ incidencia()!.observacion }}</p>
+        </div>
+      </section>
+      }
+
+      <!-- SECCIÓN TRANSICIONES DE ESTADO (R9) -->
+      <section class="transiciones-panel" aria-label="Gestión de estado">
+        <h2 class="seccion-subtitulo">Gestión de estado y resolución (R9)</h2>
+
+        <!-- CASO RESUELTA: NO RETROCEDE -->
+        @if (incidencia()!.estado === 'resuelta') {
+        <div class="alerta-resuelta-box" role="status">
+          <ion-icon name="checkmark-done-outline" class="alerta-icono" aria-hidden="true"></ion-icon>
+          <div>
+            <strong>Incidencia finalizada y resuelta</strong>
+            <p>Este expediente no admite retrocesos ni modificaciones posteriores de estado.</p>
+          </div>
+        </div>
+        } @else {
+        <!-- CASO PENDIENTE O EN PROCESO: FORMULARIO DE ACCIÓN -->
+        <div class="transicion-acciones-box">
+          <!-- CAMPO DE OBSERVACIÓN -->
+          <div class="campo-observacion-grupo">
+            <label for="observacion-input" class="observacion-etiqueta">
+              Observación técnica de la cuadrilla:
+              <span class="campo-obligatorio-aviso">(Obligatoria para marcar como Resuelta)</span>
+            </label>
+            <textarea
+              id="observacion-input"
+              rows="3"
+              class="observacion-input-area"
+              [ngModel]="observacion()"
+              (ngModelChange)="observacion.set($event)"
+              placeholder="Detalle la solución aplicada, cuadrilla interviniente o motivos del avance técnico..."
+            ></textarea>
+          </div>
+
+          <!-- ADVERTENCIA DE OBSERVACIÓN FALTANTE -->
+          @if (errorObservacion()) {
+          <div class="alerta-error-box" role="alert">
+            <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+            <span>{{ errorObservacion() }}</span>
+          </div>
+          }
+
+          <!-- NOTIFICACIÓN DE ÉXITO O ERROR DE TRANSICIÓN -->
+          @if (mensajeExito()) {
+          <div class="alerta-exito-box" role="status">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            <span>{{ mensajeExito() }}</span>
+          </div>
+          } @if (errorTransicion()) {
+          <div class="alerta-error-box" role="alert">
+            <ion-icon name="close-circle-outline" aria-hidden="true"></ion-icon>
+            <span>{{ errorTransicion() }}</span>
+          </div>
+          }
+
+          <!-- BOTONES DE TRANSICIÓN VÁLIDA -->
+          <div class="botones-transicion-fila">
+            @if (incidencia()!.estado === 'pendiente') {
+            <ion-button
+              (click)="cambiarEstado('en_proceso')"
+              [disabled]="guardando()"
+              color="primary"
+              fill="outline"
+              class="accion-btn btn-transicion"
+            >
+              <ion-icon name="construct-outline" slot="start" aria-hidden="true"></ion-icon>
+              Pasar a En Proceso
+            </ion-button>
+
+            <ion-button
+              (click)="cambiarEstado('resuelta')"
+              [disabled]="guardando()"
+              color="success"
+              fill="solid"
+              class="accion-btn btn-transicion"
+            >
+              <ion-icon name="checkmark-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+              Dar por Resuelta
+            </ion-button>
+            } @if (incidencia()!.estado === 'en_proceso') {
+            <ion-button
+              (click)="cambiarEstado('resuelta')"
+              [disabled]="guardando()"
+              color="success"
+              fill="solid"
+              class="accion-btn btn-transicion"
+            >
+              <ion-icon name="checkmark-done-outline" slot="start" aria-hidden="true"></ion-icon>
+              Dar por Resuelta
+            </ion-button>
+            }
+          </div>
+
+          @if (guardando()) {
+          <div class="guardando-aviso" role="status">
+            <ion-spinner name="dots" color="primary"></ion-spinner>
+            <span>Guardando cambios en el sistema municipal...</span>
+          </div>
+          }
+        </div>
+        }
+      </section>
+    </article>
+    }
   </div>
 </ion-content>

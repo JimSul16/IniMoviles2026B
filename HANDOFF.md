@@ -12,10 +12,10 @@
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
 | **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
-| **Fase actual** | D cerrada · iniciando fase E (R9: detalle y transiciones) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **16/16** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `fase-D: …` |
-| **🚦 Señal** | `FASE-D: commiteado — iniciando fase E (R9: detalle y transiciones)` |
+| **Fase actual** | E cerrada · iniciando fase F (R5: registro y validaciones) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **28/28** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `fase-E: …` |
+| **🚦 Señal** | `FASE-E: commiteado — iniciando fase F (R5: registro y validaciones)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -331,6 +331,35 @@ Hecho:
      anti-duplicación y verificación de que la página 4 no se solicita).
 BUILD: verde (build 0 warnings, lint 0 warnings, 16 unit tests pasando, 2 e2e pasando).
 Siguiente: Fase E (R9 — detalle y transiciones de estado).
+```
+
+---
+
+## Bloque #10 — 🟪 gemini-ui (fase E cerrada: detalle y transiciones de estado R9)
+
+```
+Fase completada: E — detalle técnico y reglas de transición de estado (R9, 1,6 pts).
+Hecho:
+  1. Servicio de Incidencias: métodos `getIncidenciaById(id)` y `actualizarEstado(id, nuevoEstado, observacion)`
+     con persistencia PATCH a MockAPI y mapeo de errores tipados (404 específico vs caída de red 0).
+  2. Detalle completo con los 8 campos: código `INC-<id>`, tipo con icono, descripción, dirección,
+     sector, fecha formateada en español, estado con badge de alto contraste, prioridad, foto de evidencia
+     (con fallback si no existe o si falla carga) y coordenadas GPS si aplican.
+  3. Reglas de transición estrictas (R9):
+     - pendiente → en_proceso o resuelta.
+     - en_proceso → resuelta.
+     - Resuelta no retrocede: cuando el estado es 'resuelta', se bloquean y ocultan las opciones de
+       cambio de estado informando con aviso explícito "Incidencia finalizada y resuelta".
+     - Observación obligatoria: pasar a 'resuelta' exige obligatoriamente un informe técnico no vacío;
+       si está vacío, se impide el envío con alerta accesible (role="alert") y no se hace PATCH.
+  4. Persistencia en API: PATCH con guard síncrono `guardando`, spinners de guardado y confirmación visual.
+  5. Manejo de estados de carga y error: cargando con spinner, error 404 diferenciado de red (status 0)
+     con botón de reintento que preserva el ID.
+  6. Iconos: registrados en `src/main.ts` y `src/test-setup.ts` para evitar alertas de runtime.
+  7. Tests: 9 tests en `incidencias.service.spec.ts` (+4 nuevos) y 8 tests unitarios exhaustivos en
+     `detalle.page.spec.ts` verificando carga, 404, red, transiciones válidas, observación obligatoria y no-retroceso.
+BUILD: verde (build 0 warnings, lint 0 warnings, 28 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase F (R5 — formulario de registro de incidencias y validaciones).
 ```
 
 ---
