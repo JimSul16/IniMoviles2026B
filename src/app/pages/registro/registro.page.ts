@@ -21,6 +21,8 @@ import type { ErrorCamara } from '../../services/camara.service';
 import { CamaraService } from '../../services/camara.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
+import type { ErrorUbicacion } from '../../services/ubicacion.service';
+import { UbicacionService } from '../../services/ubicacion.service';
 
 export interface ErroresFormulario {
   tipo?: string;
@@ -29,6 +31,7 @@ export interface ErroresFormulario {
   sector?: string;
   prioridad?: string;
   foto?: string;
+  coordenadas?: string;
 }
 
 /**
@@ -66,6 +69,7 @@ export interface ErroresFormulario {
 export class RegistroPage {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly camaraService = inject(CamaraService);
+  private readonly ubicacionService = inject(UbicacionService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef, { optional: true });
 
@@ -86,7 +90,9 @@ export class RegistroPage {
   readonly errores = signal<ErroresFormulario>({});
   readonly enviando = signal<boolean>(false);
   readonly capturandoFoto = signal<boolean>(false);
+  readonly obteniendoGps = signal<boolean>(false);
   readonly errorPermisoCamara = signal<string | null>(null);
+  readonly errorGps = signal<string | null>(null);
   readonly errorServidor = signal<string | null>(null);
   readonly incidenciaCreada = signal<string | null>(null);
 
@@ -105,6 +111,40 @@ export class RegistroPage {
 
   esFotoObligatoria(): boolean {
     return prioridadExigeFoto(this.prioridad());
+  }
+
+  esBache(): boolean {
+    return this.tipo() === 'bache';
+  }
+
+  /**
+   * Obtiene las coordenadas actuales desde el sensor GPS mediante @capacitor/geolocation (R7).
+   */
+  async obtenerUbicacionActual(): Promise<void> {
+    this.errorGps.set(null);
+    this.obteniendoGps.set(true);
+
+    try {
+      const pos = await this.ubicacionService.obtenerPosicionActual();
+      this.lat.set(pos.lat);
+      this.lon.set(pos.lon);
+
+      // Limpiar error de coordenadas si estaba presente
+      if (this.errores().coordenadas) {
+        this.errores.update((errs) => {
+          const copia = { ...errs };
+          delete copia.coordenadas;
+          return copia;
+        });
+      }
+    } catch (err: unknown) {
+      const errUbi = err as ErrorUbicacion;
+      this.errorGps.set(
+        errUbi?.mensaje || 'No fue posible obtener la posición GPS. Puede ingresar las coordenadas de forma manual.',
+      );
+    } finally {
+      this.obteniendoGps.set(false);
+    }
   }
 
   validar(): boolean {
@@ -141,6 +181,20 @@ export class RegistroPage {
     if (this.esFotoObligatoria() && !this.foto()) {
       nuevosErrores.foto =
         'Para incidencias de prioridad ALTA es obligatorio adjuntar una fotografía de evidencia (R5).';
+    }
+
+    // Regla de oro R7: En bache la ubicación es obligatoria (GPS o manual válida)
+    if (this.esBache()) {
+      if (!this.ubicacionService.validarCoordenadas(this.lat(), this.lon())) {
+        nuevosErrores.coordenadas =
+          'Para incidencias de tipo Bache las coordenadas geográficas son obligatorias (R7). Active el GPS o ingrese valores manuales válidos (latitud entre -90 y 90, longitud entre -180 y 180).';
+      }
+    } else if (this.lat() !== null || this.lon() !== null) {
+      // Si en otro tipo se ingresaron coordenadas parciales, validar que ambas sean correctas
+      if (!this.ubicacionService.validarCoordenadas(this.lat(), this.lon())) {
+        nuevosErrores.coordenadas =
+          'Las coordenadas geográficas ingresadas no son válidas (latitud entre -90 y 90, longitud entre -180 y 180).';
+      }
     }
 
     this.errores.set(nuevosErrores);

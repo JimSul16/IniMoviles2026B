@@ -138,7 +138,80 @@
         }
       </div>
 
-      <!-- CAMPO 6: EVIDENCIA FOTOGRÁFICA (R5 + R6) -->
+      <!-- CAMPO 6: GEOLOCALIZACIÓN Y COORDENADAS (R7) -->
+      <div class="campo-grupo">
+        <div class="campo-label-fila">
+          <span class="campo-label" id="label-coordenadas">
+            Coordenadas geográficas: @if (esBache()) {
+            <span class="marca-obligatoria">*(Obligatoria en baches)</span>
+            } @else {
+            <span class="marca-opcional">(Opcional)</span>
+            }
+          </span>
+          <ion-button
+            (click)="obtenerUbicacionActual()"
+            [disabled]="obteniendoGps()"
+            color="secondary"
+            fill="outline"
+            size="small"
+            class="accion-btn btn-gps"
+          >
+            @if (obteniendoGps()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            GPS... } @else {
+            <ion-icon name="navigate-outline" slot="start" aria-hidden="true"></ion-icon>
+            Obtener GPS }
+          </ion-button>
+        </div>
+
+        @if (esBache()) {
+        <div class="aviso-bache-coordenadas" role="note">
+          <ion-icon name="warning-outline" aria-hidden="true"></ion-icon>
+          <span>Tipo BACHE: Coordenadas obligatorias (R7). Si el sensor falla, ingréselas manualmente.</span>
+        </div>
+        }
+
+        <div class="coordenadas-inputs-fila">
+          <div class="coord-col">
+            <label for="lat-input" class="sublabel-coord">Latitud (-90 a 90):</label>
+            <input
+              id="lat-input"
+              type="number"
+              step="any"
+              class="form-control-input"
+              [ngModel]="lat()"
+              (ngModelChange)="lat.set($event !== '' && $event !== null ? +$event : null)"
+              placeholder="-0.18065"
+            />
+          </div>
+          <div class="coord-col">
+            <label for="lon-input" class="sublabel-coord">Longitud (-180 a 180):</label>
+            <input
+              id="lon-input"
+              type="number"
+              step="any"
+              class="form-control-input"
+              [ngModel]="lon()"
+              (ngModelChange)="lon.set($event !== '' && $event !== null ? +$event : null)"
+              placeholder="-78.4678"
+            />
+          </div>
+        </div>
+
+        @if (errorGps()) {
+        <div class="campo-error-box alerta-gps" role="alert">
+          <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ errorGps() }}</span>
+        </div>
+        } @if (errores().coordenadas) {
+        <div class="campo-error-box" role="alert">
+          <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ errores().coordenadas }}</span>
+        </div>
+        }
+      </div>
+
+      <!-- CAMPO 7: EVIDENCIA FOTOGRÁFICA (R5 + R6) -->
       <div class="campo-grupo">
         <span class="campo-label" id="label-foto">
           Fotografía de evidencia: @if (esFotoObligatoria()) {

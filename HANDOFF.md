@@ -12,10 +12,10 @@
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
 | **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
-| **Fase actual** | G cerrada · iniciando fase H (R7: geolocalización y baches) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **41/41** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `fase-G: …` |
-| **🚦 Señal** | `FASE-G: commiteado — iniciando fase H (R7: geolocalización)` |
+| **Fase actual** | H cerrada · iniciando fase I (R8: borrador recuperable) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **50/50** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `fase-H: …` |
+| **🚦 Señal** | `FASE-H: commiteado — iniciando fase I (R8: borrador recuperable)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -411,6 +411,32 @@ Hecho:
      (total 9 tests en registro) verificando captura, cancelación sin borrado de datos y permiso denegado.
 BUILD: verde (build 0 warnings, lint 0 warnings, 41 unit tests pasando, 2 e2e pasando).
 Siguiente: Fase H (R7 — geolocalización, coordenadas GPS y regla obligatoria para baches).
+```
+
+---
+
+## Bloque #13 — 🟪 gemini-ui (fase H cerrada: geolocalización GPS y baches R7)
+
+```
+Fase completada: H — geolocalización, coordenadas GPS y regla obligatoria para baches (R7, 1,2 pts).
+Hecho:
+  1. Servicio de Geolocalización `UbicacionService`: integración con `@capacitor/geolocation`
+     para obtención de coordenadas del sensor y validación estricta de rangos geográficos
+     WGS84 (latitud entre -90 y 90, longitud entre -180 y 180).
+  2. Obtención automática por GPS: botón "Obtener GPS" en el formulario de registro con
+     spinner accesible y actualización reactiva de las señales `lat` y `lon`.
+  3. Coordenadas manuales ante fallo del sensor: si el GPS es denegado o no tiene cobertura,
+     el sistema informa con aviso instructivo y permite el ingreso manual de coordenadas válidas.
+  4. REGLA R7 CRÍTICA: En incidencias de tipo 'bache' las coordenadas son estrictamente OBLIGATORIAS.
+     Si el usuario intenta guardar un bache sin coordenadas válidas (GPS o manuales), el formulario
+     bloquea el envío con alerta visual explícita en pantalla.
+  5. En otros tipos de incidencias (luminaria, señalización, alcantarilla, parque), la ubicación GPS
+     es opcional y la dirección en texto basta para la inspección municipal.
+  6. Tests: 4 tests en `ubicacion.service.spec.ts` y 5 tests adicionales en `registro.page.spec.ts`
+     (total 14 tests en registro) verificando lectura GPS, obligatoriedad en bache, coordenadas manuales
+     válidas, rangos y opcionalidad en otros tipos.
+BUILD: verde (build 0 warnings, lint 0 warnings, 50 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase I (R8 — borrador local recuperable con @capacitor/preferences).
 ```
 
 ---

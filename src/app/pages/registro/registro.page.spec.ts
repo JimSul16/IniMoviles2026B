@@ -7,10 +7,11 @@ import type { Incidencia } from '../../models/incidencia.model';
 import { CamaraService } from '../../services/camara.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
+import { UbicacionService } from '../../services/ubicacion.service';
 
 import { RegistroPage } from './registro.page';
 
-describe('RegistroPage (R5 + R6)', () => {
+describe('RegistroPage (R5 + R6 + R7)', () => {
   let component: RegistroPage;
   let fixture: ComponentFixture<RegistroPage>;
   let mockIncidenciasService: {
@@ -18,6 +19,10 @@ describe('RegistroPage (R5 + R6)', () => {
   };
   let mockCamaraService: {
     capturarFoto: ReturnType<typeof vi.fn>;
+  };
+  let mockUbicacionService: {
+    obtenerPosicionActual: ReturnType<typeof vi.fn>;
+    validarCoordenadas: (lat: number | null | undefined, lon: number | null | undefined) => boolean;
   };
 
   const nuevaRespuesta: Incidencia = {
@@ -42,6 +47,14 @@ describe('RegistroPage (R5 + R6)', () => {
     mockCamaraService = {
       capturarFoto: vi.fn(),
     };
+    mockUbicacionService = {
+      obtenerPosicionActual: vi.fn(),
+      validarCoordenadas: (lat, lon) => {
+        if (lat === null || lat === undefined || lon === null || lon === undefined) return false;
+        if (isNaN(lat) || isNaN(lon)) return false;
+        return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+      },
+    };
 
     await TestBed.configureTestingModule({
       imports: [RegistroPage],
@@ -49,6 +62,7 @@ describe('RegistroPage (R5 + R6)', () => {
         provideRouter([]),
         { provide: IncidenciasService, useValue: mockIncidenciasService },
         { provide: CamaraService, useValue: mockCamaraService },
+        { provide: UbicacionService, useValue: mockUbicacionService },
       ],
     }).compileComponents();
 
@@ -130,6 +144,8 @@ describe('RegistroPage (R5 + R6)', () => {
     component.sector.set('Iñaquito');
     component.prioridad.set('alta');
     component.foto.set('data:image/jpeg;base64,samplephoto');
+    component.lat.set(-0.18);
+    component.lon.set(-78.48);
 
     component.guardar();
     fixture.detectChanges();
@@ -228,5 +244,111 @@ describe('RegistroPage (R5 + R6)', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Permiso de cámara denegado');
+  });
+
+  it('obtiene la posición GPS actual del sensor y asigna coordenadas (R7)', async () => {
+    mockUbicacionService.obtenerPosicionActual.mockResolvedValue({ lat: -0.1806, lon: -78.4678 });
+
+    await component.obtenerUbicacionActual();
+    fixture.detectChanges();
+
+    expect(mockUbicacionService.obtenerPosicionActual).toHaveBeenCalled();
+    expect(component.lat()).toBe(-0.1806);
+    expect(component.lon()).toBe(-78.4678);
+  });
+
+  it('regla R7: para tipo BACHE las coordenadas son obligatorias y bloquea guardado si faltan', () => {
+    component.tipo.set('bache');
+    component.descripcion.set('Hueco profundo en el asfalto carril norte');
+    component.direccion.set('Av. 10 de Agosto y Mariana de Jesús');
+    component.sector.set('Mariscal Sucre');
+    component.prioridad.set('media');
+    component.lat.set(null);
+    component.lon.set(null);
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).not.toHaveBeenCalled();
+    expect(component.errores().coordenadas).toContain('coordenadas geográficas son obligatorias');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('coordenadas geográficas son obligatorias');
+  });
+
+  it('regla R7: permite guardar BACHE con coordenadas manuales válidas cuando el GPS falla', () => {
+    mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
+
+    component.tipo.set('bache');
+    component.descripcion.set('Hueco profundo en el asfalto carril norte');
+    component.direccion.set('Av. 10 de Agosto y Mariana de Jesús');
+    component.sector.set('Mariscal Sucre');
+    component.prioridad.set('alta');
+    component.foto.set('data:image/jpeg;base64,samplephoto');
+    // Coordenadas manuales válidas
+    component.lat.set(-0.1945);
+    component.lon.set(-78.4912);
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tipo: 'bache',
+        lat: -0.1945,
+        lon: -78.4912,
+      }),
+    );
+    expect(component.incidenciaCreada()).toBe('INC-27');
+  });
+
+  it('valida que las coordenadas manuales estén en rangos válidos (-90..90, -180..180)', () => {
+    component.tipo.set('bache');
+    component.descripcion.set('Bache con coordenadas fuera de rango');
+    component.direccion.set('Av. Prensa');
+    component.sector.set('Cotocollao');
+    component.prioridad.set('media');
+    component.lat.set(95); // Fuera de rango
+    component.lon.set(-78);
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).not.toHaveBeenCalled();
+    expect(component.errores().coordenadas).toBeDefined();
+  });
+
+  it('en otros tipos de incidencia las coordenadas son opcionales y permite guardar sin ellas', () => {
+    mockIncidenciasService.crearIncidencia.mockReturnValue(
+      of({
+        ...nuevaRespuesta,
+        id: '29',
+        tipo: 'parque',
+        lat: null,
+        lon: null,
+        prioridad: 'baja',
+        foto: null,
+      }),
+    );
+
+    component.tipo.set('parque');
+    component.descripcion.set('Banca de madera rota en parque La Carolina');
+    component.direccion.set('Av. Shyris y Portugal');
+    component.sector.set('Iñaquito');
+    component.prioridad.set('baja');
+    component.lat.set(null);
+    component.lon.set(null);
+
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tipo: 'parque',
+        lat: null,
+        lon: null,
+      }),
+    );
+    expect(component.incidenciaCreada()).toBe('INC-29');
   });
 });
