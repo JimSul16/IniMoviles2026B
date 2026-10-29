@@ -106,6 +106,18 @@
               <span class="codigo-texto">{{ codigoDe(item) }}</span>
             </div>
             <div class="header-badges">
+              <button
+                type="button"
+                class="btn-toggle-seguimiento"
+                [class.marcado]="estaEnSeguimiento(item.id)"
+                (click)="toggleSeguimiento($event, item.id)"
+                [attr.aria-label]="estaEnSeguimiento(item.id) ? 'Quitar de seguimiento' : 'Marcar para seguimiento'"
+              >
+                <ion-icon
+                  [name]="estaEnSeguimiento(item.id) ? 'bookmark' : 'bookmark-outline'"
+                  aria-hidden="true"
+                ></ion-icon>
+              </button>
               <!-- 7. ESTADO -->
               <span class="estado-badge" [class]="'estado-' + item.estado">
                 <ion-icon [name]="obtenerIconoEstado(item.estado)" aria-hidden="true"></ion-icon>

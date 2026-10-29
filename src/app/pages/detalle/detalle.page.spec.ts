@@ -6,6 +6,7 @@ import { of, throwError } from 'rxjs';
 import type { Incidencia } from '../../models/incidencia.model';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
+import { SeguimientoService } from '../../services/seguimiento.service';
 
 import { DetallePage } from './detalle.page';
 
@@ -15,6 +16,10 @@ describe('DetallePage (R9)', () => {
   let mockIncidenciasService: {
     getIncidenciaById: ReturnType<typeof vi.fn>;
     actualizarEstado: ReturnType<typeof vi.fn>;
+  };
+  let mockSeguimientoService: {
+    estaEnSeguimiento: ReturnType<typeof vi.fn>;
+    alternarSeguimiento: ReturnType<typeof vi.fn>;
   };
 
   const mockIncidenciaPendiente: Incidencia = {
@@ -51,12 +56,17 @@ describe('DetallePage (R9)', () => {
       getIncidenciaById: vi.fn(),
       actualizarEstado: vi.fn(),
     };
+    mockSeguimientoService = {
+      estaEnSeguimiento: vi.fn().mockReturnValue(false),
+      alternarSeguimiento: vi.fn().mockResolvedValue(true),
+    };
 
     await TestBed.configureTestingModule({
       imports: [DetallePage],
       providers: [
         provideRouter([]),
         { provide: IncidenciasService, useValue: mockIncidenciasService },
+        { provide: SeguimientoService, useValue: mockSeguimientoService },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -220,5 +230,16 @@ describe('DetallePage (R9)', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Incidencia finalizada y resuelta');
     expect(compiled.textContent).not.toContain('Pasar a En Proceso');
+  });
+
+  it('permite alternar el seguimiento de la incidencia desde la cabecera (R1)', async () => {
+    mockIncidenciasService.getIncidenciaById.mockReturnValue(of(mockIncidenciaPendiente));
+    component.id = '7';
+    component.ionViewWillEnter();
+    fixture.detectChanges();
+
+    await component.toggleSeguimiento();
+
+    expect(mockSeguimientoService.alternarSeguimiento).toHaveBeenCalledWith('7');
   });
 });

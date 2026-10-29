@@ -1,22 +1,193 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/" text="Volver"></ion-back-button>
+      <ion-back-button defaultHref="/" text="Inicio"></ion-back-button>
     </ion-buttons>
-    <ion-title>Para seguimiento</ion-title>
+    <ion-title>Para Seguimiento</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="cargarSeguimiento()"
+        [disabled]="estado() === 'cargando'"
+        aria-label="Actualizar seguimiento"
+      >
+        <ion-icon slot="icon-only" name="refresh-outline" aria-hidden="true"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="contenedor-principal">
-    <div class="estado-box">
+    <!-- 1. ESTADO DE CARGA (SKELETON) -->
+    @if (estado() === 'cargando') {
+    <div class="skeleton-container" role="status" aria-label="Cargando incidencias en seguimiento">
+      @for (i of [1, 2]; track i) {
+      <div class="skeleton-card">
+        <div class="sk-header">
+          <ion-skeleton-text [animated]="true" class="sk-chip"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="sk-badge"></ion-skeleton-text>
+        </div>
+        <ion-skeleton-text [animated]="true" class="sk-foto"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" class="sk-titulo"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" class="sk-desc-1"></ion-skeleton-text>
+        <div class="sk-meta-row">
+          <ion-skeleton-text [animated]="true" class="sk-meta-item"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="sk-meta-item"></ion-skeleton-text>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- 2. ESTADO VACÍO (SIN INCIDENCIAS MARCADAS) -->
+    @if (estado() === 'vacio') {
+    <div class="estado-box" role="status">
       <div class="icono-circulo vacio">
         <ion-icon name="bookmark-outline" class="estado-icon" aria-hidden="true"></ion-icon>
       </div>
-      <h2 class="estado-titulo">Incidencias en seguimiento</h2>
+      <h2 class="estado-titulo">No tiene incidencias en seguimiento</h2>
       <p class="estado-descripcion">
-        Supervisión de reportes marcados para control prioritario del inspector municipal.
+        No ha marcado ningún reporte municipal para supervisión prioritaria. Explore el listado oficial y pulse el
+        marcador de seguimiento para controlar reportes críticos desde este panel.
       </p>
+      <ion-button (click)="irAlListado()" color="primary" fill="solid" class="accion-btn">
+        <ion-icon name="list-outline" slot="start" aria-hidden="true"></ion-icon>
+        Ver Listado de Incidencias
+      </ion-button>
     </div>
+    }
+
+    <!-- 3. ESTADO DE ERROR DE COMUNICACIÓN -->
+    @if (estado() === 'error') {
+    <div class="estado-box" role="alert">
+      <div class="icono-circulo error">
+        <ion-icon name="cloud-offline-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+      </div>
+      <h2 class="estado-titulo">Fallo al sincronizar seguimiento</h2>
+      <p class="estado-descripcion">
+        {{ mensajeError() || 'No fue posible consultar los datos actualizados desde la oficina municipal.' }}
+      </p>
+      <ion-button (click)="cargarSeguimiento()" color="primary" fill="solid" class="accion-btn">
+        <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
+        Reintentar sincronización
+      </ion-button>
+    </div>
+    }
+
+    <!-- 4. ESTADO ÉXITO: LISTADO DE INCIDENCIAS EN SEGUIMIENTO (R1) -->
+    @if (estado() === 'exito') {
+    <section aria-label="Incidencias marcadas para seguimiento continuo">
+      <!-- Barra informativa -->
+      <div class="cabecera-inspeccion" aria-live="polite">
+        <div class="conteo-badge">
+          <span class="conteo-num">{{ incidencias().length }}</span>
+          <span class="conteo-label">en seguimiento</span>
+        </div>
+        <span class="inspeccion-tag">Control prioritario del inspector</span>
+      </div>
+
+      <div class="cards-grid">
+        @for (item of incidencias(); track item.id) {
+        <article class="incidencia-card" [attr.data-id]="item.id">
+          <!-- CABECERA: CÓDIGO Y ESTADO -->
+          <header class="card-header">
+            <div class="codigo-chip">
+              <span class="codigo-texto">{{ codigoDe(item) }}</span>
+            </div>
+            <div class="header-badges">
+              <span class="estado-badge" [class]="'estado-' + item.estado">
+                <ion-icon [name]="obtenerIconoEstado(item.estado)" aria-hidden="true"></ion-icon>
+                <span>{{ obtenerEtiquetaEstado(item.estado) }}</span>
+              </span>
+              <span class="prioridad-badge" [class]="'prioridad-' + item.prioridad">
+                {{ obtenerEtiquetaPrioridad(item.prioridad) }}
+              </span>
+            </div>
+          </header>
+
+          <!-- FOTOGRAFÍA -->
+          @if (item.foto) {
+          <div class="foto-box">
+            <img
+              [src]="item.foto"
+              [alt]="'Evidencia fotográfica de incidencia ' + codigoDe(item)"
+              class="foto-img"
+              loading="lazy"
+              (error)="onFotoError(item.id)"
+            />
+            <div class="foto-etiqueta">
+              <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+              <span>Evidencia fotográfica</span>
+            </div>
+          </div>
+          } @else {
+          <div class="foto-sin-evidencia">
+            <ion-icon name="image-outline" class="sin-foto-icon" aria-hidden="true"></ion-icon>
+            <span>Sin fotografía de evidencia</span>
+          </div>
+          }
+
+          <!-- CUERPO DE LA TARJETA CON CAMPOS PRINCIPALES -->
+          <div class="card-body">
+            <!-- TIPO DE INFRAESTRUCTURA -->
+            <div class="tipo-fila">
+              <ion-icon [name]="obtenerIconoTipo(item.tipo)" class="tipo-icon" aria-hidden="true"></ion-icon>
+              <h2 class="tipo-nombre">{{ obtenerEtiquetaTipo(item.tipo) }}</h2>
+            </div>
+
+            <!-- DESCRIPCIÓN TÉCNICA -->
+            <p class="descripcion-texto">{{ item.descripcion }}</p>
+
+            <!-- METADATOS TÉCNICOS -->
+            <div class="meta-grid">
+              <div class="meta-item">
+                <ion-icon name="location-outline" class="meta-icon" aria-hidden="true"></ion-icon>
+                <div class="meta-info">
+                  <span class="meta-label">Dirección:</span>
+                  <span class="meta-valor">{{ item.direccion }}</span>
+                </div>
+              </div>
+
+              <div class="meta-item">
+                <ion-icon name="business-outline" class="meta-icon" aria-hidden="true"></ion-icon>
+                <div class="meta-info">
+                  <span class="meta-label">Sector:</span>
+                  <span class="meta-valor">{{ item.sector }}</span>
+                </div>
+              </div>
+
+              <div class="meta-item">
+                <ion-icon name="calendar-outline" class="meta-icon" aria-hidden="true"></ion-icon>
+                <div class="meta-info">
+                  <span class="meta-label">Fecha de reporte:</span>
+                  <span class="meta-valor">{{ item.fecha | date : 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACCIONES: DETALLE Y QUITAR DE SEGUIMIENTO -->
+          <footer class="card-footer-acciones">
+            <ion-button (click)="irADetalle(item.id)" fill="outline" color="primary" size="small" class="accion-btn">
+              <ion-icon name="document-text-outline" slot="start" aria-hidden="true"></ion-icon>
+              Ver detalle
+            </ion-button>
+            <ion-button
+              (click)="desmarcar($event, item.id)"
+              fill="outline"
+              color="danger"
+              size="small"
+              class="accion-btn btn-quitar-seguimiento"
+              [attr.aria-label]="'Quitar ' + codigoDe(item) + ' de seguimiento'"
+            >
+              <ion-icon name="bookmark" slot="start" aria-hidden="true"></ion-icon>
+              Dejar de seguir
+            </ion-button>
+          </footer>
+        </article>
+        }
+      </div>
+    </section>
+    }
   </div>
 </ion-content>

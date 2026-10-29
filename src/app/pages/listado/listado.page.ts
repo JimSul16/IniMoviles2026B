@@ -21,6 +21,7 @@ import type { EstadoIncidencia, Incidencia, PrioridadIncidencia, TipoIncidencia 
 import { codigoDe, ESTADOS, PRIORIDADES, TIPOS } from '../../models/incidencia.model';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
+import { SeguimientoService } from '../../services/seguimiento.service';
 
 /**
  * Vista de consulta de incidencias con paginación remota incremental (R2 + R3).
@@ -49,6 +50,7 @@ import { IncidenciasService } from '../../services/incidencias.service';
 })
 export class ListadoPage implements ViewWillEnter {
   private readonly incidenciasService = inject(IncidenciasService);
+  private readonly seguimientoService = inject(SeguimientoService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly estadoVisual = signal<'cargando' | 'vacio' | 'error' | 'exito'>('cargando');
@@ -213,6 +215,15 @@ export class ListadoPage implements ViewWillEnter {
 
   obtenerEtiquetaTipo(tipo: TipoIncidencia): string {
     return TIPOS.find((t) => t.valor === tipo)?.etiqueta ?? tipo;
+  }
+
+  estaEnSeguimiento(id: string | number): boolean {
+    return this.seguimientoService.estaEnSeguimiento(id);
+  }
+
+  async toggleSeguimiento(event: Event, id: string | number): Promise<void> {
+    event.stopPropagation();
+    await this.seguimientoService.alternarSeguimiento(id);
   }
 
   obtenerIconoTipo(tipo: TipoIncidencia): string {

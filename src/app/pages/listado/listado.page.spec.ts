@@ -6,6 +6,7 @@ import { of, throwError } from 'rxjs';
 import type { Incidencia } from '../../models/incidencia.model';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
+import { SeguimientoService } from '../../services/seguimiento.service';
 
 import { ListadoPage } from './listado.page';
 
@@ -14,6 +15,10 @@ describe('ListadoPage', () => {
   let fixture: ComponentFixture<ListadoPage>;
   let mockIncidenciasService: {
     getIncidencias: ReturnType<typeof vi.fn>;
+  };
+  let mockSeguimientoService: {
+    estaEnSeguimiento: ReturnType<typeof vi.fn>;
+    alternarSeguimiento: ReturnType<typeof vi.fn>;
   };
 
   const pagina1: Incidencia[] = Array.from({ length: 10 }, (_, i) => ({
@@ -68,10 +73,18 @@ describe('ListadoPage', () => {
     mockIncidenciasService = {
       getIncidencias: vi.fn().mockReturnValue(of(pagina1)),
     };
+    mockSeguimientoService = {
+      estaEnSeguimiento: vi.fn().mockReturnValue(false),
+      alternarSeguimiento: vi.fn().mockResolvedValue(true),
+    };
 
     await TestBed.configureTestingModule({
       imports: [ListadoPage],
-      providers: [provideRouter([]), { provide: IncidenciasService, useValue: mockIncidenciasService }],
+      providers: [
+        provideRouter([]),
+        { provide: IncidenciasService, useValue: mockIncidenciasService },
+        { provide: SeguimientoService, useValue: mockSeguimientoService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ListadoPage);
@@ -210,5 +223,15 @@ describe('ListadoPage', () => {
     expect(component.estadoVisual()).toBe('vacio');
     expect(component.incidencias().length).toBe(0);
     expect(component.hasMore()).toBe(false);
+  });
+
+  it('permite alternar el seguimiento de una incidencia desde la tarjeta (R1)', async () => {
+    const fakeEvent = new Event('click');
+    const stopPropagationSpy = vi.spyOn(fakeEvent, 'stopPropagation');
+
+    await component.toggleSeguimiento(fakeEvent, '3');
+
+    expect(stopPropagationSpy).toHaveBeenCalled();
+    expect(mockSeguimientoService.alternarSeguimiento).toHaveBeenCalledWith('3');
   });
 });

@@ -12,10 +12,10 @@
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
 | **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
-| **Fase actual** | J cerrada · iniciando fase K (R1: seguimiento local persistente) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **67/67** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `0527b50` (H) · `c704ca7` (I) · `fase-J: …` |
-| **🚦 Señal** | `FASE-J: commiteado — iniciando fase K (R1: seguimiento local)` |
+| **Fase actual** | K cerrada · iniciando fase L (R10: inicio con indicadores reactivos y verificación de campo) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **83/83** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `0527b50` (H) · `c704ca7` (I) · `a2609ed` (J) · `fase-K: …` |
+| **🚦 Señal** | `FASE-K: commiteado — iniciando fase L (R10: inicio e indicadores)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -488,6 +488,33 @@ Hecho:
      bloqueante y consulta previa al guardado.
 BUILD: verde (build 0 warnings, lint 0 warnings, 67 unit tests pasando, 2 e2e pasando).
 Siguiente: Fase K (R1 — seguimiento local persistente con Preferences y vista propia).
+```
+
+---
+
+## Bloque #16 — 🟪 gemini-ui (fase K cerrada: seguimiento local persistente R1)
+
+```
+Fase completada: K — seguimiento local persistente con vista propia y desmarcado reactivo (R1, 0,8 pts).
+Hecho:
+  1. Servicio de Seguimiento `SeguimientoService`: persistencia en `@capacitor/preferences`
+     bajo la clave `urbaninspect_seguimiento_ids`.
+  2. REGLA DE ORO R1: Almacenamiento EXCLUSIVO de IDs (`Set<string>`), sin almacenar objetos completos.
+     Los datos se consultan en vivo desde la API para que las incidencias en seguimiento siempre
+     reflejen el estado real y las actualizaciones de la oficina municipal.
+  3. Desmarcado sin efectos secundarios remotos: Al desmarcar una incidencia, desaparece de la vista
+     de seguimiento de forma reactiva e inmediata SIN modificar la API de oficina (sin DELETE ni PATCH).
+  4. Vista Propia `/seguimiento` (`SeguimientoPage`):
+     - Muestra EXCLUSIVAMENTE las incidencias marcadas por el inspector.
+     - 4 estados visuales: cargando (skeleton cards), vacío ("No tiene incidencias en seguimiento" con
+       botón al listado), error de sincronización con reintento, y éxito con los 8 campos de cada ficha.
+     - Acción "Dejar de seguir" en cada tarjeta y botón directo para ir a la ficha técnica.
+  5. Marcado global integrado: Botón de seguimiento con icono `bookmark` en las tarjetas del listado
+     y en la barra de herramientas del detalle (`DetallePage`).
+  6. Tests: 6 tests en `seguimiento.service.spec.ts`, 8 tests en `seguimiento.page.spec.ts`, y tests
+     de integración en `listado.page.spec.ts` y `detalle.page.spec.ts` (total 83 tests pasando).
+BUILD: verde (build 0 warnings, lint 0 warnings, 83 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase L (R10 — pantalla de inicio con indicadores reactivos y verificación de navegación).
 ```
 
 ---

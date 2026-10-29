@@ -26,6 +26,7 @@ import type {
 import { codigoDe, ESTADOS, PRIORIDADES, SIGUIENTE_ESTADO, TIPOS } from '../../models/incidencia.model';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
+import { SeguimientoService } from '../../services/seguimiento.service';
 
 /**
  * Detalle de Incidencia y gestión de transiciones de estado (R9, 1,6 pts).
@@ -61,6 +62,7 @@ import { IncidenciasService } from '../../services/incidencias.service';
 })
 export class DetallePage implements ViewWillEnter {
   private readonly incidenciasService = inject(IncidenciasService);
+  private readonly seguimientoService = inject(SeguimientoService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef, { optional: true });
 
@@ -249,5 +251,17 @@ export class DetallePage implements ViewWillEnter {
     const item = this.incidencia();
     if (!item) return null;
     return SIGUIENTE_ESTADO[item.estado];
+  }
+
+  estaEnSeguimiento(): boolean {
+    const item = this.incidencia();
+    return item ? this.seguimientoService.estaEnSeguimiento(item.id) : false;
+  }
+
+  async toggleSeguimiento(): Promise<void> {
+    const item = this.incidencia();
+    if (item) {
+      await this.seguimientoService.alternarSeguimiento(item.id);
+    }
   }
 }

@@ -4,6 +4,20 @@
       <ion-back-button defaultHref="/incidencias" text="Volver"></ion-back-button>
     </ion-buttons>
     <ion-title>Ficha Técnica · {{ obtenerCodigo() }}</ion-title>
+    <ion-buttons slot="end">
+      @if (incidencia()) {
+      <ion-button
+        (click)="toggleSeguimiento()"
+        [attr.aria-label]="estaEnSeguimiento() ? 'Quitar de seguimiento' : 'Marcar para seguimiento'"
+      >
+        <ion-icon
+          slot="icon-only"
+          [name]="estaEnSeguimiento() ? 'bookmark' : 'bookmark-outline'"
+          aria-hidden="true"
+        ></ion-icon>
+      </ion-button>
+      }
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 

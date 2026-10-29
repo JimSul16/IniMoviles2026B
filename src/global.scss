@@ -100,6 +100,48 @@
   align-items: center;
 }
 
+.btn-toggle-seguimiento {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ion-color-medium, #64748b);
+  font-size: 1.25rem;
+  border-radius: 6px;
+  min-width: 36px;
+  min-height: 36px;
+  transition: color 0.15s ease, transform 0.1s ease;
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &.marcado {
+    color: var(--ion-color-primary, #2563eb);
+  }
+}
+
+.card-footer-acciones {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(100, 116, 139, 0.12);
+  background: rgba(100, 116, 139, 0.03);
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .accion-btn {
+    --min-height: 40px;
+    min-height: 40px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+}
+
 .estado-badge {
   display: inline-flex;
   align-items: center;
