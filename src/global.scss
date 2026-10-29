@@ -1,12 +1,5 @@
 /*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
+ * App Global CSS — UrbanInspect (Municipio de Quito)
  */
 
 /* Core CSS required for Ionic components to work properly */
@@ -25,13 +18,351 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
+@import "@ionic/angular/css/palettes/dark.system.css";
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* ==========================================================================
+   ESTILOS COMPARTIDOS — INSPECCIÓN DE CAMPO (URBANINSPECT)
+   ========================================================================== */
+
+.contenedor-principal {
+  padding: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Contexto municipal superior */
+.cabecera-inspeccion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--ion-card-background, #ffffff);
+  border-radius: 10px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.conteo-num {
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  margin-right: 4px;
+}
+
+.conteo-label,
+.inspeccion-tag {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+/* Tarjeta de Incidencia */
+.incidencia-card {
+  background: var(--ion-card-background, #ffffff);
+  border-radius: 14px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.12);
+}
+
+.codigo-chip {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.header-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  &.estado-pendiente {
+    background: rgba(180, 83, 9, 0.12);
+    color: #b45309;
+    border: 1px solid rgba(180, 83, 9, 0.3);
+  }
+
+  &.estado-en_proceso {
+    background: rgba(29, 78, 216, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(29, 78, 216, 0.3);
+  }
+
+  &.estado-resuelta {
+    background: rgba(21, 128, 61, 0.12);
+    color: #15803d;
+    border: 1px solid rgba(21, 128, 61, 0.3);
+  }
+}
+
+.prioridad-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+
+  &.prioridad-alta {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  &.prioridad-media {
+    background: #fef3c7;
+    color: #b45309;
+  }
+
+  &.prioridad-baja {
+    background: #f1f5f9;
+    color: #475569;
+  }
+}
+
+/* Área de imagen */
+.foto-box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.foto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.foto-etiqueta {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.foto-sin-evidencia {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(100, 116, 139, 0.06);
+  color: var(--ion-color-medium);
+  font-size: 0.82rem;
+  border-bottom: 1px dashed rgba(100, 116, 139, 0.2);
+
+  .sin-foto-icon {
+    font-size: 1.2rem;
+  }
+}
+
+/* Cuerpo de la tarjeta */
+.card-body {
+  padding: 14px;
+}
+
+.tipo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(13, 148, 136, 0.1);
+  color: #0f766e;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.descripcion-texto {
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--ion-color-dark, #0f172a);
+  margin: 0 0 12px 0;
+  font-weight: 500;
+}
+
+/* Metadatos */
+.metadatos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(100, 116, 139, 0.12);
+}
+
+.meta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.meta-icon {
+  font-size: 1rem;
+  color: var(--ion-color-medium);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.meta-content {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.meta-label {
+  color: var(--ion-color-medium);
+}
+
+.meta-valor {
+  color: var(--ion-color-dark, #0f172a);
+  font-weight: 500;
+}
+
+/* Estados Vacío / Error */
+.estado-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--ion-card-background, #ffffff);
+  border-radius: 14px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  margin-top: 20px;
+}
+
+.icono-circulo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+
+  .estado-icon {
+    font-size: 32px;
+  }
+
+  &.vacio {
+    background: rgba(100, 116, 139, 0.12);
+    color: var(--ion-color-medium);
+  }
+
+  &.error {
+    background: rgba(185, 28, 28, 0.12);
+    color: #b91c1c;
+  }
+}
+
+.estado-titulo {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--ion-color-dark, #0f172a);
+}
+
+.estado-descripcion {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--ion-color-medium);
+  margin: 0 0 20px 0;
+  max-width: 380px;
+}
+
+.accion-btn {
+  --min-height: 44px;
+  min-height: 44px;
+  font-weight: 600;
+}
+
+.toolbar-refresh-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Skeletons */
+.skeleton-card {
+  padding: 0;
+
+  .sk-codigo {
+    width: 70px;
+    height: 22px;
+    border-radius: 6px;
+  }
+
+  .sk-estado {
+    width: 85px;
+    height: 22px;
+    border-radius: 6px;
+  }
+
+  .sk-media {
+    width: 100%;
+    height: 160px;
+  }
+
+  .sk-tipo {
+    width: 110px;
+    height: 20px;
+    margin-bottom: 8px;
+  }
+
+  .sk-desc-1 {
+    width: 95%;
+    height: 16px;
+    margin-bottom: 4px;
+  }
+
+  .sk-desc-2 {
+    width: 70%;
+    height: 16px;
+    margin-bottom: 12px;
+  }
+
+  .sk-meta-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .sk-meta-item {
+    width: 45%;
+    height: 14px;
+  }
+}

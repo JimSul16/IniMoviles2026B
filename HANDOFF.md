@@ -11,11 +11,11 @@
 | Campo | Valor |
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
-| **Responsable ahora** | 🟪 **`gemini-ui`** — fase C (R2: listado de incidencias) |
-| **Fase actual** | C — listado con los 8 campos, estados vacío y error |
-| **BUILD** | ✅ **verde** — `npm run build` · `tsc` app+spec · `npm run lint` · `test:unit` 1/1 · `test:e2e` 2/2 |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (fase A) · `fase-B: …` |
-| **🚦 Señal** | `SCAFFOLD: listo — puede empezar gemini-ui` |
+| **Responsable ahora** | 🟦 **`mimo-infra`** — verificación y fase D (R3: carga progresiva e incremental) |
+| **Fase actual** | C cerrada — pase a fase D (R3: paginación remota e incremental) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` 11/11 · `test:e2e` 2/2 |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (fase A) · fase B · fase C |
+| **🚦 Señal** | `FASE-C: commiteado — MiMo verifica y abre la fase D` |
 | **Errores conocidos** | · El recurso de MockAPI se llama **`API`** (no se pudo renombrar) → la URL vive en `environment.ts`; ver `PLAN.md` §0.1/§0.2 · **No existe `X-Total-Count`**: el fin real es `items.length === PAGE_SIZE` · límite de payload ≈100 KB (foto ≤ 70 KB base64) |
 
 ---
@@ -105,6 +105,40 @@ Decisiones a respetar:
   · Las fotos son base64 dentro del campo `foto` y se comprimen a ≤ 70 KB antes de enviarse.
 BUILD: verde (build · tsc app+spec · lint --max-warnings 0 · vitest 1/1 · playwright 2/2).
 Errores conocidos: ninguno. Cuota horaria de MockAPI: si aparece 429, esperar a la ventana siguiente.
+```
+
+---
+
+## Bloque #4 — 🟪 Gemini (fase C cerrada: R2 listado con 8 campos, vacío y error)
+
+```
+Fase completada: C — requisito R2 (1,6 pts): Consulta de incidencias.
+Hecho:
+  · Servicio HTTP único `src/app/services/incidencias.service.ts`: consulta la primera página
+    de incidencias en MockAPI (?page=1&limit=10) con tipado estricto (cero any). Mapeo explícito
+    de errores clasificando caída de red (status 0) vs recurso no encontrado (404) vs error de servidor.
+  · Listado completo en `src/app/pages/listado/`:
+      – Muestra con claridad los OCHO campos: código (INC-<id>), tipo (con etiqueta e icono),
+        descripción, dirección, sector, fecha (formato legible DD/MM/AAAA · HH:mm), estado
+        (con badge temático: pendiente/en_proceso/resuelta) y fotografía de evidencia (<img [src]>
+        con lazy loading o fallback visual explícito si no tiene foto).
+      – Tres estados visibles completos:
+          1. Carga: skeleton shimmer con estructura idéntica a la tarjeta final.
+          2. Vacío: mensaje amigable, icono municipal y botón de recarga.
+          3. Error con reintento: diferencia caída de red vs 404 con botón táctil ≥ 44 px.
+  · Diseño UI Ionic no genérico: tema municipal de Quito de alto contraste para campo
+    (variables.scss y global.scss), targets táctiles ≥ 44 px, tarjetas con elevación y feedback activo.
+  · Iconos ionicons registrados en `src/main.ts` y en `src/test-setup.ts`.
+  · Presupuesto SCSS cumplido: listado.page.scss de tamaño mínimo, clases compartidas en global.scss
+    (cero warnings/errores de budget).
+  · Tests unitarios añadidos: 5 tests para `IncidenciasService` y 5 tests para `ListadoPage`.
+Siguiente: 🟦 MiMo verifica y da paso a fase D (R3 — carga progresiva e incremental con infinite scroll).
+Decisiones a respetar:
+  · Paginación remota de la fase D controlada por tamaño de página (items.length === PAGE_SIZE), jamás por X-Total-Count.
+  · Todo el HTTP se mantiene en `IncidenciasService`.
+  · Complete de infinite scroll siempre en finally.
+BUILD: verde (npm run build · npm run lint · test:unit 11/11 · test:e2e 2/2).
+Errores conocidos: ninguno.
 ```
 
 ---

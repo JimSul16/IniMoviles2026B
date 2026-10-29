@@ -1,2 +1,90 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+/**
+ * UrbanInspect — Tema de Identidad Municipal (DMQ Quito)
+ * Diseñado para alto contraste en inspección de campo y trabajo al aire libre.
+ */
+
+:root {
+  --ion-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Azul cívico municipal profundo */
+  --ion-color-primary: #1d4ed8;
+  --ion-color-primary-rgb: 29, 78, 216;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #1a45be;
+  --ion-color-primary-tint: #3460dc;
+
+  /* Teal / Operativo de infraestructura */
+  --ion-color-secondary: #0d9488;
+  --ion-color-secondary-rgb: 13, 148, 136;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #0b8277;
+  --ion-color-secondary-tint: #259f94;
+
+  /* Pizarra de apoyo */
+  --ion-color-tertiary: #475569;
+  --ion-color-tertiary-rgb: 71, 85, 105;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #3e4b5c;
+  --ion-color-tertiary-tint: #596678;
+
+  /* Estado resuelta: verde esmeralda alta visibilidad */
+  --ion-color-success: #15803d;
+  --ion-color-success-rgb: 21, 128, 61;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #127136;
+  --ion-color-success-tint: #2c8d50;
+
+  /* Estado pendiente / advertencia: ámbar intenso */
+  --ion-color-warning: #b45309;
+  --ion-color-warning-rgb: 180, 83, 9;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-contrast-rgb: 255, 255, 255;
+  --ion-color-warning-shade: #9e4908;
+  --ion-color-warning-tint: #bc6422;
+
+  /* Estado de error / prioridad alta: rojo alerta */
+  --ion-color-danger: #b91c1c;
+  --ion-color-danger-rgb: 185, 28, 28;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #a31919;
+  --ion-color-danger-tint: #c03333;
+
+  /* Superficies claras con buen contraste */
+  --ion-color-light: #f1f5f9;
+  --ion-color-light-rgb: 241, 245, 249;
+  --ion-color-light-contrast: #0f172a;
+  --ion-color-light-contrast-rgb: 15, 23, 42;
+  --ion-color-light-shade: #d4d8db;
+  --ion-color-light-tint: #f2f6fa;
+
+  --ion-color-medium: #64748b;
+  --ion-color-medium-rgb: 100, 116, 139;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #58667a;
+  --ion-color-medium-tint: #748297;
+
+  --ion-color-dark: #0f172a;
+  --ion-color-dark-rgb: 15, 23, 42;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255, 255, 255;
+  --ion-color-dark-shade: #0d1425;
+  --ion-color-dark-tint: #272e3f;
+
+  --ion-background-color: #f8fafc;
+  --ion-item-background: #ffffff;
+  --ion-card-background: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-background-color: #0b1120;
+    --ion-item-background: #111827;
+    --ion-card-background: #111827;
+  }
+}

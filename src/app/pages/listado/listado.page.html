@@ -1,12 +1,190 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/"></ion-back-button>
+      <ion-back-button defaultHref="/" text="Volver"></ion-back-button>
     </ion-buttons>
     <ion-title>Incidencias</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cargarIncidencias()" aria-label="Actualizar incidencias" class="toolbar-refresh-btn">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <p>Listado de incidencias (fase C — R2 / fase D — R3).</p>
+<ion-content [fullscreen]="true" class="listado-content">
+  <div class="contenedor-principal">
+    <!-- ESTADO 1: CARGA (SKELETON SHIMMER) -->
+    @if (estadoVisual() === 'cargando') {
+    <div class="skeleton-list" aria-busy="true" aria-label="Cargando incidencias">
+      @for (i of [1, 2, 3]; track i) {
+      <div class="incidencia-card skeleton-card">
+        <div class="card-header">
+          <ion-skeleton-text [animated]="true" class="sk-codigo"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="sk-estado"></ion-skeleton-text>
+        </div>
+        <div class="sk-media-box">
+          <ion-skeleton-text [animated]="true" class="sk-media"></ion-skeleton-text>
+        </div>
+        <div class="card-body">
+          <ion-skeleton-text [animated]="true" class="sk-tipo"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="sk-desc-1"></ion-skeleton-text>
+          <ion-skeleton-text [animated]="true" class="sk-desc-2"></ion-skeleton-text>
+          <div class="sk-meta-row">
+            <ion-skeleton-text [animated]="true" class="sk-meta-item"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" class="sk-meta-item"></ion-skeleton-text>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ESTADO 2: VACÍO (SIN REGISTROS) -->
+    @if (estadoVisual() === 'vacio') {
+    <div class="estado-box estado-vacio" role="status">
+      <div class="icono-circulo vacio">
+        <ion-icon name="clipboard-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+      </div>
+      <h2 class="estado-titulo">No existen incidencias</h2>
+      <p class="estado-descripcion">
+        No se encontraron reportes de infraestructura urbana registrados en el sistema municipal.
+      </p>
+      <ion-button (click)="cargarIncidencias()" fill="outline" color="primary" class="accion-btn">
+        <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
+        Actualizar listado
+      </ion-button>
+    </div>
+    }
+
+    <!-- ESTADO 3: ERROR CON REINTENTO (RED / 404 / SERVIDOR) -->
+    @if (estadoVisual() === 'error') {
+    <div class="estado-box estado-error" role="alert">
+      <div class="icono-circulo error">
+        @if (errorInfo()?.tipo === 'red') {
+        <ion-icon name="cloud-offline-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+        } @else if (errorInfo()?.tipo === 'no_encontrado') {
+        <ion-icon name="alert-circle-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+        } @else {
+        <ion-icon name="warning-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+        }
+      </div>
+
+      <h2 class="estado-titulo">
+        @if (errorInfo()?.tipo === 'red') { Error de conexión de red } @else if (errorInfo()?.tipo === 'no_encontrado')
+        { Servicio no encontrado (404) } @else { Fallo en consulta municipal }
+      </h2>
+
+      <p class="estado-descripcion">{{ errorInfo()?.mensaje }}</p>
+
+      <ion-button (click)="cargarIncidencias()" fill="solid" color="primary" class="accion-btn">
+        <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
+        Reintentar consulta
+      </ion-button>
+    </div>
+    }
+
+    <!-- ESTADO 4: ÉXITO (LISTADO CON LOS 8 CAMPOS) -->
+    @if (estadoVisual() === 'exito') {
+    <div class="listado-exito">
+      <!-- Barra informativa de contexto municipal -->
+      <div class="cabecera-inspeccion">
+        <div class="conteo-badge">
+          <span class="conteo-num">{{ incidencias().length }}</span>
+          <span class="conteo-label">incidencias cargadas</span>
+        </div>
+        <span class="inspeccion-tag">Municipio DMQ · Inspección de campo</span>
+      </div>
+
+      <!-- Tarjetas de incidencias -->
+      <div class="cards-grid">
+        @for (item of incidencias(); track item.id) {
+        <article class="incidencia-card" [attr.data-id]="item.id">
+          <!-- 1. CÓDIGO Y ESTADO (CABECERA) -->
+          <header class="card-header">
+            <div class="codigo-chip">
+              <span class="codigo-texto">{{ codigoDe(item) }}</span>
+            </div>
+            <div class="header-badges">
+              <!-- 7. ESTADO -->
+              <span class="estado-badge" [class]="'estado-' + item.estado">
+                <ion-icon [name]="obtenerIconoEstado(item.estado)" aria-hidden="true"></ion-icon>
+                <span>{{ obtenerEtiquetaEstado(item.estado) }}</span>
+              </span>
+              <!-- Prioridad informativa -->
+              <span class="prioridad-badge" [class]="'prioridad-' + item.prioridad">
+                {{ item.prioridad | uppercase }}
+              </span>
+            </div>
+          </header>
+
+          <!-- 8. FOTOGRAFÍA SI EXISTE (CON FALLBACK EXPLÍCITO) -->
+          @if (item.foto) {
+          <div class="foto-box">
+            <img
+              [src]="item.foto"
+              [alt]="'Evidencia fotográfica de incidencia ' + codigoDe(item)"
+              class="foto-img"
+              loading="lazy"
+            />
+            <div class="foto-etiqueta">
+              <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+              <span>Evidencia fotográfica</span>
+            </div>
+          </div>
+          } @else {
+          <div class="foto-sin-evidencia">
+            <ion-icon name="image-outline" class="sin-foto-icon" aria-hidden="true"></ion-icon>
+            <span>Sin fotografía de evidencia</span>
+          </div>
+          }
+
+          <div class="card-body">
+            <!-- 2. TIPO DE INCIDENCIA -->
+            <div class="tipo-row">
+              <div class="tipo-badge">
+                <ion-icon [name]="obtenerIconoTipo(item.tipo)" aria-hidden="true"></ion-icon>
+                <span class="tipo-texto">{{ obtenerEtiquetaTipo(item.tipo) }}</span>
+              </div>
+            </div>
+
+            <!-- 3. DESCRIPCIÓN -->
+            <p class="descripcion-texto">{{ item.descripcion }}</p>
+
+            <!-- METADATOS TÉCNICOS DE UBICACIÓN Y TIEMPO -->
+            <div class="metadatos-lista">
+              <!-- 4. DIRECCIÓN -->
+              <div class="meta-item">
+                <ion-icon name="location-outline" class="meta-icon" aria-hidden="true"></ion-icon>
+                <div class="meta-content">
+                  <span class="meta-label">Dirección:</span>
+                  <span class="meta-valor">{{ item.direccion }}</span>
+                </div>
+              </div>
+
+              <!-- 5. SECTOR -->
+              <div class="meta-item">
+                <ion-icon name="map-outline" class="meta-icon" aria-hidden="true"></ion-icon>
+                <div class="meta-content">
+                  <span class="meta-label">Sector:</span>
+                  <span class="meta-valor">{{ item.sector }}</span>
+                </div>
+              </div>
+
+              <!-- 6. FECHA -->
+              <div class="meta-item">
+                <ion-icon name="calendar-outline" class="meta-icon" aria-hidden="true"></ion-icon>
+                <div class="meta-content">
+                  <span class="meta-label">Fecha de reporte:</span>
+                  <span class="meta-valor">{{ formatearFecha(item.fecha) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+        }
+      </div>
+    </div>
+    }
+  </div>
 </ion-content>
