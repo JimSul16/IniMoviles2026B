@@ -152,6 +152,17 @@
         <div class="foto-previa-caja">
           <img [src]="foto()" alt="Previsualización de la evidencia fotográfica" class="foto-previa-img" />
           <div class="foto-previa-acciones">
+            <ion-button
+              (click)="tomarFotoConCamara()"
+              [disabled]="capturandoFoto()"
+              color="medium"
+              fill="outline"
+              size="small"
+              class="accion-btn"
+            >
+              <ion-icon name="camera-outline" slot="start" aria-hidden="true"></ion-icon>
+              Repetir foto
+            </ion-button>
             <ion-button (click)="eliminarFoto()" color="danger" fill="outline" size="small" class="accion-btn">
               <ion-icon name="trash-outline" slot="start" aria-hidden="true"></ion-icon>
               Quitar foto
@@ -160,9 +171,23 @@
         </div>
         } @else {
         <div class="subir-foto-caja">
+          <ion-button
+            (click)="tomarFotoConCamara()"
+            [disabled]="capturandoFoto()"
+            color="primary"
+            fill="solid"
+            class="accion-btn btn-captura-cam"
+          >
+            @if (capturandoFoto()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            Abriendo cámara... } @else {
+            <ion-icon name="camera-outline" slot="start" aria-hidden="true"></ion-icon>
+            Tomar fotografía con cámara }
+          </ion-button>
+
           <label for="foto-file-input" class="subir-foto-btn" tabindex="0">
-            <ion-icon name="camera-outline" class="cam-icon" aria-hidden="true"></ion-icon>
-            <span>Seleccionar o capturar fotografía</span>
+            <ion-icon name="image-outline" class="cam-icon" aria-hidden="true"></ion-icon>
+            <span>O seleccionar archivo desde galería</span>
           </label>
           <input
             id="foto-file-input"
@@ -171,6 +196,11 @@
             class="input-file-oculto"
             (change)="onFileSelected($event)"
           />
+        </div>
+        } @if (errorPermisoCamara()) {
+        <div class="campo-error-box alerta-permiso" role="alert">
+          <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ errorPermisoCamara() }}</span>
         </div>
         } @if (errores().foto) {
         <div class="campo-error-box" role="alert">

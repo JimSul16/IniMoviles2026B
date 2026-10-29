@@ -12,10 +12,10 @@
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
 | **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
-| **Fase actual** | F cerrada · iniciando fase G (R6: evidencia fotográfica y cámara) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **34/34** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `fase-F: …` |
-| **🚦 Señal** | `FASE-F: commiteado — iniciando fase G (R6: evidencia fotográfica)` |
+| **Fase actual** | G cerrada · iniciando fase H (R7: geolocalización y baches) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **41/41** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `fase-G: …` |
+| **🚦 Señal** | `FASE-G: commiteado — iniciando fase H (R7: geolocalización)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -386,6 +386,31 @@ Hecho:
      regla de foto en prioridad alta vs baja/media, persistencia POST y retención ante fallos.
 BUILD: verde (build 0 warnings, lint 0 warnings, 34 unit tests pasando, 2 e2e pasando).
 Siguiente: Fase G (R6 — evidencia fotográfica con cámara Capacitor, compresión <= 70 KB, cancelación y permisos).
+```
+
+---
+
+## Bloque #12 — 🟪 gemini-ui (fase G cerrada: cámara y evidencia fotográfica R6)
+
+```
+Fase completada: G — evidencia fotográfica con cámara Capacitor, compresión y permisos (R6, 1,6 pts).
+Hecho:
+  1. Servicio de Cámara `CamaraService`: integración con `@capacitor/camera` para captura y
+     redimensionamiento con Canvas a data-URI base64 respetando el límite estricto de <= 70 KB
+     (trampa de MockAPI 413 evitada).
+  2. Previsualización obligatoria antes de guardar: el inspector observa la foto capturada en
+     el formulario antes de proceder con el registro municipal.
+  3. Protección contra pérdida de datos al cancelar: si el inspector abre la cámara y presiona
+     cancelar, el método retorna `null` de forma segura sin disparar excepciones ni reiniciar
+     los campos de texto ya ingresados (dirección, sector, descripción).
+  4. Gestión de permisos denegados: si el acceso a la cámara es rechazado, se muestra una alerta
+     técnica explicativa; si la prioridad es ALTA, se bloquea el guardado impidiendo registros incompletos.
+  5. Persistencia permanente y accesible desde el detalle: la imagen se guarda directamente en base64
+     dentro del registro del servidor, evitando rutas locales volátiles (`file://` o `content://`).
+  6. Tests: 4 tests en `camara.service.spec.ts` y 3 tests adicionales en `registro.page.spec.ts`
+     (total 9 tests en registro) verificando captura, cancelación sin borrado de datos y permiso denegado.
+BUILD: verde (build 0 warnings, lint 0 warnings, 41 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase H (R7 — geolocalización, coordenadas GPS y regla obligatoria para baches).
 ```
 
 ---

@@ -4,16 +4,20 @@ import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import type { Incidencia } from '../../models/incidencia.model';
+import { CamaraService } from '../../services/camara.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 
 import { RegistroPage } from './registro.page';
 
-describe('RegistroPage (R5)', () => {
+describe('RegistroPage (R5 + R6)', () => {
   let component: RegistroPage;
   let fixture: ComponentFixture<RegistroPage>;
   let mockIncidenciasService: {
     crearIncidencia: ReturnType<typeof vi.fn>;
+  };
+  let mockCamaraService: {
+    capturarFoto: ReturnType<typeof vi.fn>;
   };
 
   const nuevaRespuesta: Incidencia = {
@@ -35,10 +39,17 @@ describe('RegistroPage (R5)', () => {
     mockIncidenciasService = {
       crearIncidencia: vi.fn(),
     };
+    mockCamaraService = {
+      capturarFoto: vi.fn(),
+    };
 
     await TestBed.configureTestingModule({
       imports: [RegistroPage],
-      providers: [provideRouter([]), { provide: IncidenciasService, useValue: mockIncidenciasService }],
+      providers: [
+        provideRouter([]),
+        { provide: IncidenciasService, useValue: mockIncidenciasService },
+        { provide: CamaraService, useValue: mockCamaraService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RegistroPage);
@@ -159,5 +170,63 @@ describe('RegistroPage (R5)', () => {
     // Los datos deben persistir en el formulario para no frustrar al usuario
     expect(component.descripcion()).toBe('Tapa de alcantarilla rota con riesgo');
     expect(component.direccion()).toBe('Av. América y Patria');
+  });
+
+  it('captura fotografía con CamaraService y muestra la previsualización (R6)', async () => {
+    mockCamaraService.capturarFoto.mockResolvedValue('data:image/jpeg;base64,evidencianueva');
+
+    await component.tomarFotoConCamara();
+    fixture.detectChanges();
+
+    expect(mockCamaraService.capturarFoto).toHaveBeenCalled();
+    expect(component.foto()).toBe('data:image/jpeg;base64,evidencianueva');
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const img = compiled.querySelector('.foto-previa-img') as HTMLImageElement;
+    expect(img).toBeTruthy();
+    expect(img.src).toContain('data:image/jpeg;base64,evidencianueva');
+  });
+
+  it('cancelar la captura de foto deja los datos del formulario intactos (R6)', async () => {
+    mockCamaraService.capturarFoto.mockResolvedValue(null);
+
+    component.descripcion.set('Poste inclinado 30 grados');
+    component.direccion.set('Av. Ilaló y Río Amazonas');
+    component.sector.set('Cumbayá');
+
+    await component.tomarFotoConCamara();
+    fixture.detectChanges();
+
+    expect(component.descripcion()).toBe('Poste inclinado 30 grados');
+    expect(component.direccion()).toBe('Av. Ilaló y Río Amazonas');
+    expect(component.sector()).toBe('Cumbayá');
+    expect(component.foto()).toBe('');
+  });
+
+  it('explica el permiso denegado de cámara y bloquea el guardado en prioridad ALTA (R6)', async () => {
+    mockCamaraService.capturarFoto.mockRejectedValue({
+      tipo: 'permiso_denegado',
+      mensaje: 'El acceso a la cámara fue denegado por el usuario.',
+    });
+
+    component.prioridad.set('alta');
+    component.descripcion.set('Rotura mayor de tubería de agua potable');
+    component.direccion.set('Av. Pichincha y Sucre');
+    component.sector.set('Centro Histórico');
+
+    await component.tomarFotoConCamara();
+    fixture.detectChanges();
+
+    expect(component.errorPermisoCamara()).toContain('Permiso de cámara denegado');
+
+    // Intentar guardar incompleto
+    component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).not.toHaveBeenCalled();
+    expect(component.errores().foto).toBeDefined();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Permiso de cámara denegado');
   });
 });

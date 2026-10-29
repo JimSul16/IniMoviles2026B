@@ -1083,6 +1083,18 @@
   background: rgba(100, 116, 139, 0.04);
 }
 
+.btn-captura-cam {
+  width: 100%;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.alerta-permiso {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: rgba(220, 38, 38, 0.35);
+  font-weight: 500;
+}
+
 .subir-foto-btn {
   display: flex;
   flex-direction: column;

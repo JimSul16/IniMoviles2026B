@@ -17,6 +17,8 @@ import {
 
 import type { PrioridadIncidencia, TipoIncidencia } from '../../models/incidencia.model';
 import { codigoDe, PRIORIDADES, prioridadExigeFoto, TIPOS } from '../../models/incidencia.model';
+import type { ErrorCamara } from '../../services/camara.service';
+import { CamaraService } from '../../services/camara.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 
@@ -63,6 +65,7 @@ export interface ErroresFormulario {
 })
 export class RegistroPage {
   private readonly incidenciasService = inject(IncidenciasService);
+  private readonly camaraService = inject(CamaraService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef, { optional: true });
 
@@ -82,6 +85,8 @@ export class RegistroPage {
   // Estados de validación y envío
   readonly errores = signal<ErroresFormulario>({});
   readonly enviando = signal<boolean>(false);
+  readonly capturandoFoto = signal<boolean>(false);
+  readonly errorPermisoCamara = signal<string | null>(null);
   readonly errorServidor = signal<string | null>(null);
   readonly incidenciaCreada = signal<string | null>(null);
 
@@ -231,6 +236,37 @@ export class RegistroPage {
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  /**
+   * Captura una fotografía usando @capacitor/camera (R6).
+   * Si el usuario cancela la captura, los demás datos del formulario quedan intactos.
+   * Si el permiso es denegado y la prioridad es alta, explica el motivo e impide guardar incompleto.
+   */
+  async tomarFotoConCamara(): Promise<void> {
+    this.errorPermisoCamara.set(null);
+    this.capturandoFoto.set(true);
+
+    try {
+      const fotoCapturada = await this.camaraService.capturarFoto();
+      if (fotoCapturada) {
+        this.asignarFoto(fotoCapturada);
+      }
+      // Si devolvió null (usuario canceló), los datos se mantienen intactos
+    } catch (err: unknown) {
+      const errCamara = err as ErrorCamara;
+      if (errCamara?.tipo === 'permiso_denegado') {
+        this.errorPermisoCamara.set(
+          'Permiso de cámara denegado. Para reportar una incidencia de prioridad ALTA debe conceder el permiso en los ajustes de su dispositivo.',
+        );
+      } else {
+        this.errorPermisoCamara.set(
+          errCamara?.mensaje || 'Ocurrió un error inesperado al intentar acceder a la cámara.',
+        );
+      }
+    } finally {
+      this.capturandoFoto.set(false);
+    }
   }
 
   eliminarFoto(): void {
