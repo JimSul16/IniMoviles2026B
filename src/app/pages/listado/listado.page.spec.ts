@@ -1,7 +1,7 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import type { Incidencia } from '../../models/incidencia.model';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
@@ -65,7 +65,8 @@ describe('ListadoPage', () => {
     expect(component).toBeTruthy();
   });
 
-  it('carga incidencias y pasa al estado de éxito mostrando los 8 campos', () => {
+  it('carga incidencias en ionViewWillEnter y muestra los 8 campos', () => {
+    component.ionViewWillEnter();
     fixture.detectChanges();
 
     expect(component.estadoVisual()).toBe('exito');
@@ -101,16 +102,25 @@ describe('ListadoPage', () => {
     expect(compiled.textContent).toContain('Pendiente');
     expect(compiled.textContent).toContain('En proceso');
 
+    // Prioridad (conectada desde PRIORIDADES)
+    expect(compiled.textContent).toContain('Baja');
+    expect(compiled.textContent).toContain('Media');
+
     // 8. Fotografía si existe (item 1 tiene foto, item 2 tiene fallback sin evidencia)
     const imagenes = compiled.querySelectorAll('img.foto-img');
     expect(imagenes.length).toBe(1);
     expect(imagenes[0].getAttribute('src')).toBe(listaPrueba[0].foto);
     expect(compiled.textContent).toContain('Sin fotografía de evidencia');
+
+    // Navegación al detalle
+    const enlacesDetalle = compiled.querySelectorAll('.ver-detalle-btn');
+    expect(enlacesDetalle.length).toBe(2);
   });
 
   it('muestra el estado vacío cuando la API devuelve un arreglo sin registros', () => {
     mockIncidenciasService.getIncidencias.mockReturnValue(of([]));
 
+    component.ionViewWillEnter();
     fixture.detectChanges();
 
     expect(component.estadoVisual()).toBe('vacio');
@@ -129,6 +139,7 @@ describe('ListadoPage', () => {
     };
     mockIncidenciasService.getIncidencias.mockReturnValue(throwError(() => errorSimulado));
 
+    component.ionViewWillEnter();
     fixture.detectChanges();
 
     expect(component.estadoVisual()).toBe('error');
@@ -148,16 +159,45 @@ describe('ListadoPage', () => {
     };
     mockIncidenciasService.getIncidencias.mockReturnValue(throwError(() => errorSimulado));
 
+    component.ionViewWillEnter();
     fixture.detectChanges();
     expect(component.estadoVisual()).toBe('error');
 
     // Ahora simular que el reintento funciona
     mockIncidenciasService.getIncidencias.mockReturnValue(of(listaPrueba));
 
-    component.cargarIncidencias();
+    component.cargarIncidencias(true);
     fixture.detectChanges();
 
     expect(component.estadoVisual()).toBe('exito');
     expect(component.incidencias().length).toBe(2);
+  });
+
+  it('onFotoError cambia foto a null de forma inmutable y activa el fallback', () => {
+    component.ionViewWillEnter();
+    fixture.detectChanges();
+
+    expect(component.incidencias()[0].foto).toBeTruthy();
+
+    component.onFotoError('1');
+    fixture.detectChanges();
+
+    expect(component.incidencias()[0].foto).toBeNull();
+    const imagenes = (fixture.nativeElement as HTMLElement).querySelectorAll('img.foto-img');
+    expect(imagenes.length).toBe(0);
+  });
+
+  it('aplica guard síncrono para evitar peticiones duplicadas en vuelo', () => {
+    const respuestaPendiente = new Subject<Incidencia[]>();
+    mockIncidenciasService.getIncidencias.mockReturnValue(respuestaPendiente.asObservable());
+
+    component.cargarIncidencias();
+    component.cargarIncidencias();
+
+    // Solo debe haberse llamado 1 vez debido al guard
+    expect(mockIncidenciasService.getIncidencias).toHaveBeenCalledTimes(1);
+
+    respuestaPendiente.next(listaPrueba);
+    respuestaPendiente.complete();
   });
 });

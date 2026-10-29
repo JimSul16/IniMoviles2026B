@@ -1,10 +1,80 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-title>UrbanInspect</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-  <h1>UrbanInspect</h1>
-  <p>Inicio (fase L — R10: indicadores).</p>
+<ion-content [fullscreen]="true" class="inicio-content">
+  <div class="contenedor-principal">
+    <!-- HERO MUNICIPAL -->
+    <section class="hero-card">
+      <div class="hero-escudo">
+        <ion-icon name="business-outline" class="hero-icon" aria-hidden="true"></ion-icon>
+      </div>
+      <div class="hero-texto">
+        <span class="muni-tag">Distrito Metropolitano de Quito</span>
+        <h1 class="hero-titulo">Inspección Urbana</h1>
+        <p class="hero-desc">Supervisión, reporte y mantenimiento técnico de infraestructura pública municipal.</p>
+      </div>
+    </section>
+
+    <!-- INDICADOR DE CONTEO REAL (R10) -->
+    <section class="indicador-panel" aria-live="polite">
+      <div class="indicador-icono">
+        <ion-icon name="stats-chart-outline" aria-hidden="true"></ion-icon>
+      </div>
+      <div class="indicador-datos">
+        <span class="indicador-etiqueta">Incidencias registradas en sistema</span>
+        @if (cargandoIndicador()) {
+        <ion-skeleton-text [animated]="true" class="indicador-skeleton"></ion-skeleton-text>
+        } @else if (totalIncidencias() !== null) {
+        <div class="indicador-valor-box">
+          <span class="indicador-valor">{{ totalIncidencias() }}</span>
+          <span class="indicador-nota">(página 1 activa)</span>
+        </div>
+        } @else {
+        <span class="indicador-offline">Servidor no disponible</span>
+        }
+      </div>
+    </section>
+
+    <!-- ACCESOS PRINCIPALES DE NAVEGACIÓN (TARGETS >= 44 PX) -->
+    <nav class="accesos-grid" aria-label="Accesos principales del sistema">
+      <!-- 1. Listado de incidencias (/incidencias) -->
+      <a routerLink="/incidencias" class="acceso-card">
+        <div class="acceso-icono-box primario">
+          <ion-icon name="list-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="acceso-info">
+          <h2 class="acceso-titulo">Consultar incidencias</h2>
+          <p class="acceso-desc">Revisar el catálogo completo de reportes urbanos con fotografía, sector y estado.</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="acceso-flecha" aria-hidden="true"></ion-icon>
+      </a>
+
+      <!-- 2. Registrar nueva incidencia (/registro) -->
+      <a routerLink="/registro" class="acceso-card">
+        <div class="acceso-icono-box acento">
+          <ion-icon name="add-circle-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="acceso-info">
+          <h2 class="acceso-titulo">Registrar incidencia</h2>
+          <p class="acceso-desc">Levantar un nuevo reporte en campo con captura fotográfica y coordenadas.</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="acceso-flecha" aria-hidden="true"></ion-icon>
+      </a>
+
+      <!-- 3. Seguimiento local (/seguimiento) -->
+      <a routerLink="/seguimiento" class="acceso-card">
+        <div class="acceso-icono-box advertencia">
+          <ion-icon name="bookmark-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="acceso-info">
+          <h2 class="acceso-titulo">Para seguimiento</h2>
+          <p class="acceso-desc">Consultar incidencias marcadas para seguimiento prioritario en el dispositivo.</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="acceso-flecha" aria-hidden="true"></ion-icon>
+      </a>
+    </nav>
+  </div>
 </ion-content>

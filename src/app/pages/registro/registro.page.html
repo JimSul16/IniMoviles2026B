@@ -1,12 +1,22 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/"></ion-back-button>
+      <ion-back-button defaultHref="/" text="Volver"></ion-back-button>
     </ion-buttons>
     <ion-title>Registrar incidencia</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <p>Formulario de registro (fase F — R5).</p>
+  <div class="contenedor-principal">
+    <div class="estado-box">
+      <div class="icono-circulo vacio">
+        <ion-icon name="add-circle-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+      </div>
+      <h2 class="estado-titulo">Nuevo reporte municipal</h2>
+      <p class="estado-descripcion">
+        Levantamiento de incidencias de infraestructura urbana con captura de evidencia y geolocalización.
+      </p>
+    </div>
+  </div>
 </ion-content>

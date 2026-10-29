@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { IonBackButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular';
+import { IonBackButton, IonButtons, IonContent, IonHeader, IonIcon, IonTitle, IonToolbar } from '@ionic/angular';
 
 import { codigoDe } from '../../models/incidencia.model';
 
@@ -14,7 +14,7 @@ import { codigoDe } from '../../models/incidencia.model';
   selector: 'app-detalle',
   templateUrl: './detalle.page.html',
   styleUrls: ['./detalle.page.scss'],
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton, IonIcon],
 })
 export class DetallePage {
   @Input() id = '';

@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>Incidencias</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="cargarIncidencias()" aria-label="Actualizar incidencias" class="toolbar-refresh-btn">
+      <ion-button (click)="cargarIncidencias(true)" aria-label="Actualizar incidencias" class="toolbar-refresh-btn">
         <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -50,7 +50,7 @@
       <p class="estado-descripcion">
         No se encontraron reportes de infraestructura urbana registrados en el sistema municipal.
       </p>
-      <ion-button (click)="cargarIncidencias()" fill="outline" color="primary" class="accion-btn">
+      <ion-button (click)="cargarIncidencias(true)" fill="outline" color="primary" class="accion-btn">
         <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
         Actualizar listado
       </ion-button>
@@ -77,7 +77,7 @@
 
       <p class="estado-descripcion">{{ errorInfo()?.mensaje }}</p>
 
-      <ion-button (click)="cargarIncidencias()" fill="solid" color="primary" class="accion-btn">
+      <ion-button (click)="cargarIncidencias(true)" fill="solid" color="primary" class="accion-btn">
         <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
         Reintentar consulta
       </ion-button>
@@ -88,7 +88,7 @@
     @if (estadoVisual() === 'exito') {
     <div class="listado-exito">
       <!-- Barra informativa de contexto municipal -->
-      <div class="cabecera-inspeccion">
+      <div class="cabecera-inspeccion" aria-live="polite">
         <div class="conteo-badge">
           <span class="conteo-num">{{ incidencias().length }}</span>
           <span class="conteo-label">incidencias cargadas</span>
@@ -111,14 +111,14 @@
                 <ion-icon [name]="obtenerIconoEstado(item.estado)" aria-hidden="true"></ion-icon>
                 <span>{{ obtenerEtiquetaEstado(item.estado) }}</span>
               </span>
-              <!-- Prioridad informativa -->
+              <!-- Prioridad con lookup tipado de PRIORIDADES -->
               <span class="prioridad-badge" [class]="'prioridad-' + item.prioridad">
-                {{ item.prioridad | uppercase }}
+                {{ obtenerEtiquetaPrioridad(item.prioridad) }}
               </span>
             </div>
           </header>
 
-          <!-- 8. FOTOGRAFÍA SI EXISTE (CON FALLBACK EXPLÍCITO) -->
+          <!-- 8. FOTOGRAFÍA SI EXISTE (CON FALLBACK EXPLÍCITO Y ERROR HANDLER) -->
           @if (item.foto) {
           <div class="foto-box">
             <img
@@ -126,6 +126,7 @@
               [alt]="'Evidencia fotográfica de incidencia ' + codigoDe(item)"
               class="foto-img"
               loading="lazy"
+              (error)="onFotoError(item.id)"
             />
             <div class="foto-etiqueta">
               <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
@@ -181,6 +182,21 @@
               </div>
             </div>
           </div>
+
+          <!-- NAVEGACIÓN AL DETALLE (TARGET >= 44 PX) -->
+          <footer class="card-footer">
+            <ion-button
+              fill="clear"
+              size="small"
+              color="primary"
+              [routerLink]="['/incidencia', item.id]"
+              class="ver-detalle-btn"
+              aria-label="Ver detalle de la incidencia"
+            >
+              <span>Ver detalle</span>
+              <ion-icon name="chevron-forward-outline" slot="end" aria-hidden="true"></ion-icon>
+            </ion-button>
+          </footer>
         </article>
         }
       </div>

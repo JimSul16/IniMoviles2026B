@@ -24,7 +24,7 @@ export interface Incidencia {
   fecha: string;
   estado: EstadoIncidencia;
   prioridad: PrioridadIncidencia;
-  /** URL devuelta por el campo `File` de MockAPI; vacía/null si no hay foto. */
+  /** Foto de evidencia (base64 data-URI en MockAPI o URL); vacía/null si no hay foto. */
   foto?: string | null;
   lat?: number | null;
   lon?: number | null;

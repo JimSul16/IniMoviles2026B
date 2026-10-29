@@ -1,12 +1,22 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/incidencias"></ion-back-button>
+      <ion-back-button defaultHref="/incidencias" text="Volver"></ion-back-button>
     </ion-buttons>
-    <ion-title>Detalle</ion-title>
+    <ion-title>Detalle de incidencia</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <p>Detalle {{ codigo }} (fase E — R9).</p>
+  <div class="contenedor-principal">
+    <div class="estado-box">
+      <div class="icono-circulo vacio">
+        <ion-icon name="document-text-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+      </div>
+      <h2 class="estado-titulo">Detalle de incidencia {{ codigo }}</h2>
+      <p class="estado-descripcion">
+        Información técnica, evidencia fotográfica y registro de observaciones de la infraestructura.
+      </p>
+    </div>
+  </div>
 </ion-content>

@@ -11,12 +11,12 @@
 | Campo | Valor |
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
-| **Responsable ahora** | 🟪 **`gemini-ui`** — fase C' (arreglos desbloqueantes) y luego fase D (R3) |
-| **Fase actual** | C verificada y cerrada · pendiente C' y D |
-| **BUILD** | ✅ **verde** — `npm run build` · `tsc` app+spec · `npm run lint` · `test:unit` **11/11** · `test:e2e` 2/2 |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `fase-C-verificacion: …` |
-| **🚦 Señal** | `FASE-C: verificada — gemini-ui hace C' (nav + oscuro + guard) y luego D` |
-| **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** · ⚠️ **aún no hay navegación al listado** (🔴 de la revisión) · ⚠️ **tema oscuro ilegible** (🟠 de la revisión) |
+| **Responsable ahora** | 🟪 **`gemini-ui`** — fase D (R3: carga progresiva e incremental) |
+| **Fase actual** | C' cerrada (desbloqueantes resueltos) · lista para fase D (R3) |
+| **BUILD** | ✅ **verde** — `npm run build` · `tsc` app+spec · `npm run lint` · `test:unit` **16/16** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `fase-C': …` |
+| **🚦 Señal** | `FASE-C': commiteado — listo para fase D (R3: carga progresiva)` |
+| **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
 
@@ -204,6 +204,42 @@ Puntos fuertes confirmados: estados 4 completos (skeleton idéntico a la tarjeta
 modelado, cero any/console.log, tests reales con HttpTestingController, identidad municipal propia
 (sin ion-card del starter), targets ≥44 px, iconos registrados.
 Informe completo disponible en la sesión del subagente revisor-rubrica.
+```
+
+---
+
+## Bloque #7 — 🟪 Gemini (fase C' cerrada: navegación, tema oscuro, guard/fuga, contraste y placeholders)
+
+```
+Fase completada: C' — arreglos desbloqueantes del listado y navegación (R2 + R10).
+Hecho:
+  1. Navegación e inicio: `src/app/pages/inicio/` con panel municipal hero, indicador de conteo real
+     conectado a `IncidenciasService` (ionViewWillEnter + signals) y 3 accesos con routerLink
+     a /incidencias, /registro y /seguimiento (targets táctiles >= 56 px).
+  2. Lifecycle: `listado.page.ts` implementa `ViewWillEnter` (ionViewWillEnter) para recargar datos
+     cuando `IonRouterOutlet` reactiva la vista tras un alta o actualización (R10).
+  3. Tema oscuro de alto contraste: tokens redefinidos en `@media (prefers-color-scheme: dark)`
+     dentro de `src/theme/variables.scss` (--ion-color-dark: #e2e8f0, --ion-color-medium: #94a3b8,
+     --ion-color-primary: #60a5fa, card-background: #1e293b), resolviendo la anulación por especificidad.
+  4. Contraste en modo claro: `.estado-pendiente` oscurecido a #92400e y `.estado-resuelta` a #166534;
+     `.foto-sin-evidencia` oscurecido a #334155 (todos > 4.5:1, WCAG AA estricto).
+  5. Carrera + fuga: guard síncrono `peticionEnVuelo`, `tokenGeneracion` para descartar respuestas
+     viejas, `takeUntilDestroyed(destroyRef)`, y skeleton visible solo en carga inicial o forzada.
+  6. Placeholders de desarrollo eliminados en `inicio`, `detalle`, `registro` y `seguimiento`.
+  7. Menores resueltos:
+      · `index.html`: lang="es", título "UrbanInspect", viewport sin user-scalable=no.
+      · `listado.page.ts`: validación `Array.isArray()`, enlace al detalle por tarjeta,
+        `onFotoError()` inmutable para fallback de imagen rota, lookup de `PRIORIDADES`.
+      · `listado.page.scss`: `:host { display: flex; flex-direction: column; }`.
+      · `incidencia.model.ts`: docstring actualizado (base64 data-URI en foto).
+      · Código muerto eliminado: `shapes.svg` borrado, iconos no usados eliminados y nuevos registrados.
+  8. Tests: 16 unit tests pasando (5 servicio + 7 listado + 3 inicio + 1 app) y 2/2 e2e Playwright.
+Siguiente: Fase D (R3 — carga progresiva remota e incremental con infinite scroll).
+Decisiones a respetar:
+  · Paginación remota con ?page=N y pageSize=10; hasMore = data.length === pageSize.
+  · complete() de ion-infinite-scroll siempre en finally.
+BUILD: verde (npm run build · npm run lint · test:unit 16/16 · test:e2e 2/2).
+Errores conocidos: ninguno.
 ```
 
 ---
