@@ -37,5 +37,20 @@
 
     <!-- Permissions -->
 
+    <!-- Red: consulta a MockAPI y Open-Meteo (R2..R10) -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- R7 · Ubicación: GPS actual para la incidencia y para el clima.
+         Sin estos permisos @capacitor/geolocation falla siempre en Android;
+         si el usuario los deniega, la app ofrece coordenadas manuales. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- R6 · Cámara: evidencia fotográfica. Al declararse, el plugin pide el
+         permiso en tiempo de ejecución y la app explica el caso denegado. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- La app no escribe en el almacenamiento compartido: la foto viaja en
+         base64 dentro del registro (R6), así que no se piden permisos de medios. -->
+
 </manifest>

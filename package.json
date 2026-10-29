@@ -27,14 +27,10 @@
     "@angular/platform-browser": "22.2.3",
     "@angular/router": "22.2.3",
     "@capacitor/android": "^8.6.0",
-    "@capacitor/app": "8.1.2",
     "@capacitor/camera": "^8.2.6",
     "@capacitor/core": "8.6.0",
     "@capacitor/geolocation": "^8.2.4",
-    "@capacitor/haptics": "8.0.2",
-    "@capacitor/keyboard": "8.0.6",
     "@capacitor/preferences": "^8.0.1",
-    "@capacitor/status-bar": "8.0.4",
     "@ionic/angular": "^9.0.0",
     "ionicons": "^8.1.0",
     "rxjs": "~7.8.0",
@@ -60,5 +56,8 @@
     "vitest": "~5.0.5"
   },
   "prettier": "@ionic/prettier-config",
-  "description": "UrbanInspect — consulta, registro y seguimiento de incidencias de infraestructura urbana (Prueba I, ESFOT)"
+  "description": "UrbanInspect — consulta, registro y seguimiento de incidencias de infraestructura urbana (Prueba I, ESFOT)",
+  "overrides": {
+    "vite": "^8.3.5"
+  }
 }

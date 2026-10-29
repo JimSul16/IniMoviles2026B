@@ -6,7 +6,8 @@ export const environment = {
 
   /** URL base del recurso de MockAPI (API de oficina simulada). No es un secreto.
    * El recurso se llama `API` porque el plan gratuito no permite renombrarlo tras
-   * crearlo; cumple el papel del recurso `incidencias` del enunciado (ver PLAN.md §0.1). */
+   * crearlo; cumple el papel del recurso `incidencias` del enunciado (decisión
+   * documentada en el README). */
   incidenciasApiUrl: 'https://6ae2831abbb541292299fd5e.mockapi.io/API',
 
   /** API meteorológica externa REAL (sin clave, CORS `*`). */
