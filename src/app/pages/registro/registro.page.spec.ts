@@ -451,6 +451,41 @@ describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
     expect(component.descripcion()).toBe('');
   });
 
+  it('guarda automáticamente el borrador con debounce tras editar la descripción (R8)', () => {
+    vi.useFakeTimers();
+    try {
+      component.descripcion.set('Bache peligroso que requiere inspección inmediata');
+      fixture.detectChanges();
+
+      // Antes del debounce de 500 ms no debe haberse guardado todavía
+      vi.advanceTimersByTime(200);
+      expect(mockBorradorService.guardarBorrador).not.toHaveBeenCalled();
+
+      // Al avanzar superando los 500 ms (ej. 600 ms en total) debe persistir el borrador
+      vi.advanceTimersByTime(400);
+      expect(mockBorradorService.guardarBorrador).toHaveBeenCalled();
+      expect(mockBorradorService.guardarBorrador).toHaveBeenCalledWith(
+        expect.objectContaining({
+          descripcion: 'Bache peligroso que requiere inspección inmediata',
+          tipo: 'luminaria',
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('guarda el borrador inmediatamente si el inspector sale de la vista en ionViewWillLeave (R8)', () => {
+    component.descripcion.set('Avance de reporte antes de salir');
+    component.ionViewWillLeave();
+
+    expect(mockBorradorService.guardarBorrador).toHaveBeenCalledWith(
+      expect.objectContaining({
+        descripcion: 'Avance de reporte antes de salir',
+      }),
+    );
+  });
+
   it('al guardar exitosamente elimina el borrador local para no reaparecer (R8)', async () => {
     mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
 

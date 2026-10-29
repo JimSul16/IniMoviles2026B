@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import type { ViewWillEnter } from '@ionic/angular';
+import type { ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 import {
   IonBackButton,
   IonButton,
@@ -71,7 +71,7 @@ export interface ErroresFormulario {
     IonSpinner,
   ],
 })
-export class RegistroPage implements ViewWillEnter {
+export class RegistroPage implements ViewWillEnter, ViewWillLeave {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly camaraService = inject(CamaraService);
   readonly ubicacionService = inject(UbicacionService);
@@ -79,6 +79,40 @@ export class RegistroPage implements ViewWillEnter {
   private readonly borradorService = inject(BorradorService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef, { optional: true });
+
+  private guardadoPendiente?: ReturnType<typeof setTimeout>;
+
+  constructor() {
+    effect(() => {
+      // Registrar dependencias de las 8 señales del formulario para autoguardado (R8)
+      const datos = {
+        tipo: this.tipo(),
+        descripcion: this.descripcion(),
+        direccion: this.direccion(),
+        sector: this.sector(),
+        prioridad: this.prioridad(),
+        foto: this.foto(),
+        lat: this.lat(),
+        lon: this.lon(),
+      };
+
+      if (this.guardadoPendiente) {
+        clearTimeout(this.guardadoPendiente);
+      }
+
+      // No guardar formularios vacíos ni durante el envío activo a MockAPI
+      if (
+        this.enviando() ||
+        (!datos.descripcion.trim() && !datos.direccion.trim() && !datos.foto && datos.lat == null && datos.lon == null)
+      ) {
+        return;
+      }
+
+      this.guardadoPendiente = setTimeout(() => {
+        this.guardarBorradorActual();
+      }, 500);
+    });
+  }
 
   readonly tipos = TIPOS;
   readonly prioridades = PRIORIDADES;
@@ -134,6 +168,21 @@ export class RegistroPage implements ViewWillEnter {
     }
   }
 
+  ionViewWillLeave(): void {
+    if (this.guardadoPendiente) {
+      clearTimeout(this.guardadoPendiente);
+    }
+    const hayDatos =
+      Boolean(this.descripcion().trim()) ||
+      Boolean(this.direccion().trim()) ||
+      Boolean(this.foto()) ||
+      this.lat() != null ||
+      this.lon() != null;
+    if (!this.enviando() && hayDatos) {
+      this.guardarBorradorActual();
+    }
+  }
+
   continuarBorrador(): void {
     const b = this.borradorPendiente();
     if (!b) return;
@@ -150,6 +199,9 @@ export class RegistroPage implements ViewWillEnter {
   }
 
   async descartarBorrador(): Promise<void> {
+    if (this.guardadoPendiente) {
+      clearTimeout(this.guardadoPendiente);
+    }
     await this.borradorService.eliminarBorrador();
     this.borradorPendiente.set(null);
     this.limpiarFormulario();
@@ -351,6 +403,9 @@ export class RegistroPage implements ViewWillEnter {
   }
 
   limpiarFormulario(): void {
+    if (this.guardadoPendiente) {
+      clearTimeout(this.guardadoPendiente);
+    }
     this.tipo.set('luminaria');
     this.descripcion.set('');
     this.direccion.set('');
