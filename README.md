@@ -8,8 +8,8 @@
     <img src="https://img.shields.io/badge/Angular_22-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular" />
     <img src="https://img.shields.io/badge/Capacitor_8-119EFF?style=for-the-badge&logo=capacitor&logoColor=white" alt="Capacitor" />
     <img src="https://img.shields.io/badge/TypeScript_6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/API-MockAPI%20%2B%20Open--Meteo-F05032?style=for-the-badge&logo=insomnia&logoColor=white" alt="APIs" />
-    <img src="https://img.shields.io/badge/Tests-93%2F93-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Tests" />
+    <img src="https://img.shields.io/badge/API-MockAPI%20%2B%20Open--Meteo%20%2B%20Cloudinary-F05032?style=for-the-badge&logo=insomnia&logoColor=white" alt="APIs" />
+    <img src="https://img.shields.io/badge/Tests-97%2F97-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Tests" />
     <img src="https://img.shields.io/badge/Auditoría-0_vulns-3DDC84?style=for-the-badge&logoColor=white" alt="Auditoría" />
     <img src="https://img.shields.io/badge/Aplicación_Móvil-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
   </p>
@@ -74,6 +74,7 @@ graph TD
         ClimaSvc["ClimaService<br/>Open-Meteo + códigos WMO"]
         SegSvc["SeguimientoService<br/>Preferences · solo ids"]
         BorrSvc["BorradorService<br/>Preferences · borrador"]
+        CloudSvc["CloudinaryService<br/>CDN imágenes + fallback"]
         Model["models/incidencia.model.ts<br/>Incidencia · ESTADOS · SIGUIENTE_ESTADO"]
     end
 
@@ -83,8 +84,9 @@ graph TD
         Patch["PATCH /API/:id<br/>estado + observación (R9)"]
     end
 
-    subgraph Ext ["API externa real — Open-Meteo"]
-        Clim["GET /v1/forecast<br/>temperature_2m · precipitation · weather_code"]
+    subgraph Ext ["APIs externas reales"]
+        Clim["Open-Meteo<br/>GET /v1/forecast (R4)"]
+        Cloud["Cloudinary CDN<br/>POST /image/upload (R6)"]
     end
 
     subgraph Movil ["Plataforma Android"]
@@ -102,11 +104,13 @@ graph TD
     Registro --> CamSvc
     Registro --> UbicSvc
     Registro --> ClimaSvc
+    Registro --> CloudSvc
     Registro --> BorrSvc
     IncSvc --> Lista
     IncSvc --> Alta
     IncSvc --> Patch
     ClimaSvc --> Clim
+    CloudSvc -.-> Cloud
     BorrSvc -.-> Prefs
     SegSvc -.-> Prefs
     Perm -.-> CamSvc
@@ -134,7 +138,7 @@ graph TD
 
 ### Calidad y Pruebas
 - **Compilación:** `ng build` → **0 errores, 0 warnings** (budget de estilos optimizado a 2 kB / 4 kB)
-- **Tests Unitarios:** Vitest 5 + Angular Testing → **93/93 tests en 12 suites** (servicios con `HttpTestingController` real, validaciones y reglas de negocio sin `.skip`)
+- **Tests Unitarios:** Vitest 5 + Angular Testing → **97/97 tests en 13 suites** (servicios con `HttpTestingController` real, validaciones y reglas de negocio sin `.skip`)
 - **Tests E2E:** Playwright en emulación móvil (*Mobile Chrome*) → **2/2 pasados**
 - **Tipos:** `tsc --noEmit` sobre `tsconfig.app.json` y `tsconfig.spec.json` → **0 errores**
 - **Linting:** ESLint + `angular-eslint` (`--max-warnings 0`) + comprobación Prettier → **pass**
@@ -144,6 +148,7 @@ graph TD
 ### APIs
 - **Oficina:** **MockAPI** → `https://6ae2831abbb541292299fd5e.mockapi.io/API` — paginación remota real (`?page=&limit=10`), persistencia verídica en operaciones `POST`/`PATCH` y CORS abierto (`ACAO: *`).
 - **Clima:** **Open-Meteo** → `https://api.open-meteo.com/v1/forecast` — sin requerimiento de API Key, CORS abierto, `current.temperature_2m`, `current.precipitation` (mm en la última hora) y `current.weather_code` (WMO internacional).
+- **Imágenes:** **Cloudinary** → `https://api.cloudinary.com/v1_1/btmr3o2b/image/upload` — almacenamiento CDN con firma SHA-1 y respaldo automático en Base64.
 
 ---
 
@@ -255,6 +260,7 @@ src/app/
 │   ├── camara.service.ts          captura nativa + compresión ≤ 70 KB + cancelación segura
 │   ├── ubicacion.service.ts       geolocalización GPS + validación de coordenadas WGS84
 │   ├── clima.service.ts           Open-Meteo + interpretación de códigos WMO
+│   ├── cloudinary.service.ts      Cloudinary CDN + subida firmada SHA-1 con fallback
 │   ├── seguimiento.service.ts     Capacitor Preferences · persistencia local de IDs marcados
 │   └── borrador.service.ts        Capacitor Preferences · respaldo y recuperación de borrador
 └── pages/
@@ -317,7 +323,7 @@ screenshots/                       directorio de evidencias fotográficas de la 
 | Chequeo de Tipos TypeScript (App) | `npx tsc -p tsconfig.app.json --noEmit` | ✅ 0 errores |
 | Chequeo de Tipos TypeScript (Tests) | `npx tsc -p tsconfig.spec.json --noEmit` | ✅ 0 errores |
 | Análisis Estático y Formato | `npm run lint` | ✅ Todos los archivos aprobados |
-| Pruebas Unitarias Automatizadas | `npm run test:unit` | ✅ **93/93 pasadas** (Vitest) |
+| Pruebas Unitarias Automatizadas | `npm run test:unit` | ✅ **97/97 pasadas** (Vitest) |
 | Pruebas E2E en Emulación Móvil | `npm run test:e2e` | ✅ **2/2 pasadas** (Playwright) |
 | Auditoría de Dependencias | `npm audit` | ✅ **0 vulnerabilidades** |
 | Compilación del APK Nativo | `.\gradlew.bat assembleDebug` | ✅ **BUILD SUCCESSFUL** (8,58 MB) |

@@ -24,6 +24,7 @@ import type { ErrorCamara } from '../../services/camara.service';
 import { CamaraService } from '../../services/camara.service';
 import type { ClimaInfo, ErrorClima } from '../../services/clima.service';
 import { ClimaService } from '../../services/clima.service';
+import { CloudinaryService } from '../../services/cloudinary.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 import type { ErrorUbicacion } from '../../services/ubicacion.service';
@@ -74,6 +75,7 @@ export interface ErroresFormulario {
 export class RegistroPage implements ViewWillEnter, ViewWillLeave {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly camaraService = inject(CamaraService);
+  private readonly cloudinaryService = inject(CloudinaryService);
   readonly ubicacionService = inject(UbicacionService);
   readonly climaService = inject(ClimaService);
   private readonly borradorService = inject(BorradorService);
@@ -362,6 +364,19 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
       await this.consultarClimaZona();
     }
 
+    // R6: Subida a Cloudinary con fallback a Base64 como respaldo
+    let urlFoto = this.foto() || null;
+    if (urlFoto && urlFoto.startsWith('data:image')) {
+      try {
+        const cloudUrl = await this.cloudinaryService.subirImagen(urlFoto);
+        if (cloudUrl) {
+          urlFoto = cloudUrl;
+        }
+      } catch {
+        // En caso de fallo o timeout de Cloudinary, se conserva el Base64 como respaldo
+      }
+    }
+
     const nuevaIncidencia = {
       tipo: this.tipo(),
       descripcion: this.descripcion().trim(),
@@ -370,7 +385,7 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
       prioridad: this.prioridad(),
       fecha: new Date().toISOString(),
       estado: 'pendiente' as const,
-      foto: this.foto() || null,
+      foto: urlFoto,
       lat: this.lat(),
       lon: this.lon(),
       observacion: '',

@@ -15,4 +15,11 @@ export const environment = {
 
   /** Registros por petición: la paginación es REMOTA (R3). 26 sembrados / 10 = 3 páginas. */
   pageSize: 10,
+
+  /** Almacenamiento externo de imágenes en Cloudinary (R6) con fallback a Base64 */
+  cloudinary: {
+    cloudName: 'btmr3o2b',
+    apiKey: '981412624132498',
+    apiSecret: 'Mfv5sy_t6KO9CwruqsIDDb7totA',
+  },
 };
