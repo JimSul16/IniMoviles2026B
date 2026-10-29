@@ -12,10 +12,10 @@
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
 | **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
-| **Fase actual** | I cerrada · iniciando fase J (R4: consulta de clima real) |
-| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **59/59** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `0527b50` (H) · `fase-I: …` |
-| **🚦 Señal** | `FASE-I: commiteado — iniciando fase J (R4: clima real)` |
+| **Fase actual** | J cerrada · iniciando fase K (R1: seguimiento local persistente) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **67/67** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `118924c` (D) · `bfb4126` (E) · `163a813` (F) · `9b3fa71` (G) · `0527b50` (H) · `c704ca7` (I) · `fase-J: …` |
+| **🚦 Señal** | `FASE-J: commiteado — iniciando fase K (R1: seguimiento local)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -460,6 +460,34 @@ Hecho:
      (total 18 tests en registro) verificando guardado, recuperación, restauración, descarte y depuración.
 BUILD: verde (build 0 warnings, lint 0 warnings, 59 unit tests pasando, 2 e2e pasando).
 Siguiente: Fase J (R4 — consulta de clima real Open-Meteo antes de guardar).
+```
+
+---
+
+## Bloque #15 — 🟪 gemini-ui (fase J cerrada: consulta de clima real Open-Meteo R4)
+
+```
+Fase completada: J — consulta de clima real antes de guardar con Open-Meteo (R4, 0,8 pts).
+Hecho:
+  1. Servicio Meteorológico `ClimaService`: consulta a API externa y real Open-Meteo
+     (`environment.climaApiUrl`) usando las coordenadas geográficas de la inspección o
+     coordenadas del centro de Quito (-0.1807, -78.4678) como fallback.
+  2. Métricas y traducción WMO: extrae temperatura actual (°C), precipitación acumulada
+     de la última hora (mm) y traduce códigos oficiales WMO a estados descriptivos en español
+     con iconos meteorológicos dedicados.
+  3. Advertencia preventiva de lluvia (> 5 mm/h): alerta visual destacada informando que
+     la lluvia intensa puede dificultar el mantenimiento en vía pública, pero ESTRICTAMENTE
+     NO BLOQUEANTE (permite guardar).
+  4. Resiliencia ante fallos: si la API externa falla o no hay conexión con Open-Meteo,
+     emite aviso informativo claro y PERMITE continuar con el registro municipal.
+  5. Consulta automática e interactiva: se actualiza al capturar coordenadas GPS, dispone
+     de botón "Consultar clima" en el formulario y se verifica antes del guardado si aún no
+     ha sido consultado.
+  6. Tests: 4 tests en `clima.service.spec.ts` y 4 tests dedicados en `registro.page.spec.ts`
+     (total 22 tests en registro) verificando consulta, aviso de lluvia > 5 mm/h, fallo no
+     bloqueante y consulta previa al guardado.
+BUILD: verde (build 0 warnings, lint 0 warnings, 67 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase K (R1 — seguimiento local persistente con Preferences y vista propia).
 ```
 
 ---

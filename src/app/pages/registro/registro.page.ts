@@ -22,6 +22,8 @@ import type { BorradorRegistro } from '../../services/borrador.service';
 import { BorradorService } from '../../services/borrador.service';
 import type { ErrorCamara } from '../../services/camara.service';
 import { CamaraService } from '../../services/camara.service';
+import type { ClimaInfo, ErrorClima } from '../../services/clima.service';
+import { ClimaService } from '../../services/clima.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 import type { ErrorUbicacion } from '../../services/ubicacion.service';
@@ -72,7 +74,8 @@ export interface ErroresFormulario {
 export class RegistroPage implements ViewWillEnter {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly camaraService = inject(CamaraService);
-  private readonly ubicacionService = inject(UbicacionService);
+  readonly ubicacionService = inject(UbicacionService);
+  readonly climaService = inject(ClimaService);
   private readonly borradorService = inject(BorradorService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef, { optional: true });
@@ -100,6 +103,12 @@ export class RegistroPage implements ViewWillEnter {
   readonly errorGps = signal<string | null>(null);
   readonly errorServidor = signal<string | null>(null);
   readonly incidenciaCreada = signal<string | null>(null);
+
+  // Consulta meteorológica en tiempo real (R4)
+  readonly clima = signal<ClimaInfo | null>(null);
+  readonly consultandoClima = signal<boolean>(false);
+  readonly errorClima = signal<string | null>(null);
+  readonly climaConsultado = signal<boolean>(false);
 
   sectoresComunes: string[] = [
     'Centro Histórico',
@@ -187,6 +196,9 @@ export class RegistroPage implements ViewWillEnter {
           return copia;
         });
       }
+
+      // Actualizar automáticamente el clima con las nuevas coordenadas GPS
+      void this.consultarClimaZona();
     } catch (err: unknown) {
       const errUbi = err as ErrorUbicacion;
       this.errorGps.set(
@@ -251,7 +263,36 @@ export class RegistroPage implements ViewWillEnter {
     return Object.keys(nuevosErrores).length === 0;
   }
 
-  guardar(): void {
+  /**
+   * Consulta el clima en tiempo real usando Open-Meteo (R4).
+   * Si la consulta falla, captura el error de forma informativa sin bloquear el registro.
+   */
+  async consultarClimaZona(): Promise<void> {
+    this.consultandoClima.set(true);
+    this.errorClima.set(null);
+
+    return new Promise<void>((resolve) => {
+      this.climaService.consultarClima(this.lat(), this.lon()).subscribe({
+        next: (info) => {
+          this.clima.set(info);
+          this.climaConsultado.set(true);
+          this.consultandoClima.set(false);
+          resolve();
+        },
+        error: (err: ErrorClima) => {
+          this.errorClima.set(
+            err?.mensaje ||
+              'No fue posible obtener el reporte meteorológico en tiempo real. Puede continuar con el registro municipal.',
+          );
+          this.climaConsultado.set(true);
+          this.consultandoClima.set(false);
+          resolve();
+        },
+      });
+    });
+  }
+
+  async guardar(): Promise<void> {
     if (this.enviando()) {
       return;
     }
@@ -260,6 +301,11 @@ export class RegistroPage implements ViewWillEnter {
 
     if (!this.validar()) {
       return;
+    }
+
+    // R4: Consulta meteorológica en tiempo real antes de guardar si aún no se consultó
+    if (!this.climaConsultado() && !this.clima()) {
+      await this.consultarClimaZona();
     }
 
     this.enviando.set(true);
@@ -314,6 +360,9 @@ export class RegistroPage implements ViewWillEnter {
     this.lat.set(null);
     this.lon.set(null);
     this.errores.set({});
+    this.clima.set(null);
+    this.errorClima.set(null);
+    this.climaConsultado.set(false);
   }
 
   asignarFoto(fotoData: string): void {

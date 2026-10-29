@@ -6,13 +6,14 @@ import { of, throwError } from 'rxjs';
 import type { Incidencia } from '../../models/incidencia.model';
 import { BorradorService } from '../../services/borrador.service';
 import { CamaraService } from '../../services/camara.service';
+import { ClimaService } from '../../services/clima.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 import { UbicacionService } from '../../services/ubicacion.service';
 
 import { RegistroPage } from './registro.page';
 
-describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
+describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
   let component: RegistroPage;
   let fixture: ComponentFixture<RegistroPage>;
   let mockIncidenciasService: {
@@ -29,6 +30,9 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     obtenerBorrador: ReturnType<typeof vi.fn>;
     guardarBorrador: ReturnType<typeof vi.fn>;
     eliminarBorrador: ReturnType<typeof vi.fn>;
+  };
+  let mockClimaService: {
+    consultarClima: ReturnType<typeof vi.fn>;
   };
 
   const nuevaRespuesta: Incidencia = {
@@ -66,6 +70,18 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
       guardarBorrador: vi.fn().mockResolvedValue(undefined),
       eliminarBorrador: vi.fn().mockResolvedValue(undefined),
     };
+    mockClimaService = {
+      consultarClima: vi.fn().mockReturnValue(
+        of({
+          temperatura: 16.5,
+          precipitacion: 1.2,
+          codigoWmo: 3,
+          descripcion: 'Nublado',
+          alertaLluvia: false,
+          icono: 'cloud-outline',
+        }),
+      ),
+    };
 
     await TestBed.configureTestingModule({
       imports: [RegistroPage],
@@ -75,6 +91,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
         { provide: CamaraService, useValue: mockCamaraService },
         { provide: UbicacionService, useValue: mockUbicacionService },
         { provide: BorradorService, useValue: mockBorradorService },
+        { provide: ClimaService, useValue: mockClimaService },
       ],
     }).compileComponents();
 
@@ -123,7 +140,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     expect(compiled.textContent).toContain('prioridad ALTA es obligatorio adjuntar una fotografía');
   });
 
-  it('regla R5: en prioridad media o baja la fotografía es opcional y permite guardar', () => {
+  it('regla R5: en prioridad media o baja la fotografía es opcional y permite guardar', async () => {
     mockIncidenciasService.crearIncidencia.mockReturnValue(
       of({
         ...nuevaRespuesta,
@@ -140,14 +157,14 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     component.prioridad.set('media');
     component.foto.set(''); // Opcional en media
 
-    component.guardar();
+    await component.guardar();
     fixture.detectChanges();
 
     expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
     expect(component.incidenciaCreada()).toBe('INC-28');
   });
 
-  it('permite registrar en prioridad ALTA cuando la fotografía está presente', () => {
+  it('permite registrar en prioridad ALTA cuando la fotografía está presente', async () => {
     mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
 
     component.tipo.set('bache');
@@ -159,7 +176,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     component.lat.set(-0.18);
     component.lon.set(-78.48);
 
-    component.guardar();
+    await component.guardar();
     fixture.detectChanges();
 
     expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalledWith(
@@ -177,7 +194,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     expect(compiled.textContent).toContain('INC-27');
   });
 
-  it('maneja fallos de red o servidor sin perder los datos diligenciados', () => {
+  it('maneja fallos de red o servidor sin perder los datos diligenciados', async () => {
     const errorRed: ErrorConsultaIncidencias = {
       tipo: 'red',
       status: 0,
@@ -191,7 +208,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     component.sector.set('Mariscal Sucre');
     component.prioridad.set('media');
 
-    component.guardar();
+    await component.guardar();
     fixture.detectChanges();
 
     expect(component.errorServidor()).toContain('Fallo de conexión');
@@ -288,7 +305,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     expect(compiled.textContent).toContain('coordenadas geográficas son obligatorias');
   });
 
-  it('regla R7: permite guardar BACHE con coordenadas manuales válidas cuando el GPS falla', () => {
+  it('regla R7: permite guardar BACHE con coordenadas manuales válidas cuando el GPS falla', async () => {
     mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
 
     component.tipo.set('bache');
@@ -301,7 +318,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     component.lat.set(-0.1945);
     component.lon.set(-78.4912);
 
-    component.guardar();
+    await component.guardar();
     fixture.detectChanges();
 
     expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalledWith(
@@ -330,7 +347,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     expect(component.errores().coordenadas).toBeDefined();
   });
 
-  it('en otros tipos de incidencia las coordenadas son opcionales y permite guardar sin ellas', () => {
+  it('en otros tipos de incidencia las coordenadas son opcionales y permite guardar sin ellas', async () => {
     mockIncidenciasService.crearIncidencia.mockReturnValue(
       of({
         ...nuevaRespuesta,
@@ -351,7 +368,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     component.lat.set(null);
     component.lon.set(null);
 
-    component.guardar();
+    await component.guardar();
     fixture.detectChanges();
 
     expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalledWith(
@@ -434,7 +451,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     expect(component.descripcion()).toBe('');
   });
 
-  it('al guardar exitosamente elimina el borrador local para no reaparecer (R8)', () => {
+  it('al guardar exitosamente elimina el borrador local para no reaparecer (R8)', async () => {
     mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
 
     component.tipo.set('luminaria');
@@ -443,10 +460,115 @@ describe('RegistroPage (R5 + R6 + R7 + R8)', () => {
     component.sector.set('Mariscal Sucre');
     component.prioridad.set('media');
 
-    component.guardar();
+    await component.guardar();
     fixture.detectChanges();
 
     expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
     expect(mockBorradorService.eliminarBorrador).toHaveBeenCalled();
+  });
+
+  it('consulta el reporte meteorológico en tiempo real al solicitarlo (R4)', async () => {
+    component.lat.set(-0.19);
+    component.lon.set(-78.49);
+
+    await component.consultarClimaZona();
+    fixture.detectChanges();
+
+    expect(mockClimaService.consultarClima).toHaveBeenCalledWith(-0.19, -78.49);
+    expect(component.clima()).toEqual({
+      temperatura: 16.5,
+      precipitacion: 1.2,
+      codigoWmo: 3,
+      descripcion: 'Nublado',
+      alertaLluvia: false,
+      icono: 'cloud-outline',
+    });
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Nublado');
+    expect(compiled.textContent).toContain('16.5 °C');
+    expect(compiled.textContent).toContain('1.2 mm/h');
+  });
+
+  it('muestra advertencia cuando la precipitación supera 5 mm/h sin bloquear el guardado (R4)', async () => {
+    mockClimaService.consultarClima.mockReturnValue(
+      of({
+        temperatura: 14.0,
+        precipitacion: 8.5,
+        codigoWmo: 65,
+        descripcion: 'Lluvia constante',
+        alertaLluvia: true,
+        icono: 'rainy-outline',
+      }),
+    );
+    mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
+
+    await component.consultarClimaZona();
+    fixture.detectChanges();
+
+    expect(component.clima()?.alertaLluvia).toBe(true);
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Aviso de lluvia intensa (8.5 mm/h)');
+    expect(compiled.textContent).toContain('no bloquea');
+
+    // Comprobar que permite guardar sin bloqueo
+    component.tipo.set('luminaria');
+    component.descripcion.set('Revisión en condiciones de lluvia');
+    component.direccion.set('Av. 10 de Agosto');
+    component.sector.set('Iñaquito');
+    component.prioridad.set('baja');
+
+    await component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
+  });
+
+  it('si la API meteorológica falla, muestra aviso informativo y permite continuar el guardado (R4)', async () => {
+    mockClimaService.consultarClima.mockReturnValue(
+      throwError(() => ({
+        mensaje: 'Error de conexión con el servicio Open-Meteo',
+      })),
+    );
+    mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
+
+    await component.consultarClimaZona();
+    fixture.detectChanges();
+
+    expect(component.errorClima()).toContain('Error de conexión con el servicio Open-Meteo');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Error de conexión con el servicio Open-Meteo');
+
+    // El guardado debe proceder con normalidad
+    component.tipo.set('luminaria');
+    component.descripcion.set('Reporte sin datos de clima');
+    component.direccion.set('Av. Mariana de Jesús');
+    component.sector.set('Mariscal Sucre');
+    component.prioridad.set('media');
+
+    await component.guardar();
+    fixture.detectChanges();
+
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
+  });
+
+  it('en guardar() si el clima no ha sido consultado lo consulta antes de enviar a MockAPI (R4)', async () => {
+    mockIncidenciasService.crearIncidencia.mockReturnValue(of(nuevaRespuesta));
+
+    component.tipo.set('luminaria');
+    component.descripcion.set('Reporte con consulta climática automática');
+    component.direccion.set('Av. Eloy Alfaro');
+    component.sector.set('Iñaquito');
+    component.prioridad.set('media');
+    component.lat.set(-0.1807);
+    component.lon.set(-78.4678);
+
+    expect(component.climaConsultado()).toBe(false);
+
+    await component.guardar();
+    fixture.detectChanges();
+
+    expect(mockClimaService.consultarClima).toHaveBeenCalled();
+    expect(mockIncidenciasService.crearIncidencia).toHaveBeenCalled();
   });
 });

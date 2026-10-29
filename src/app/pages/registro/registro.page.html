@@ -234,6 +234,74 @@
         }
       </div>
 
+      <!-- CONDICIONES METEOROLÓGICAS EN TIEMPO REAL (R4) -->
+      <div class="campo-grupo seccion-clima-grupo">
+        <div class="campo-label-fila">
+          <span class="campo-label" id="label-clima">Condición climática en tiempo real (R4):</span>
+          <ion-button
+            (click)="consultarClimaZona()"
+            [disabled]="consultandoClima()"
+            color="secondary"
+            fill="outline"
+            size="small"
+            class="accion-btn btn-clima"
+          >
+            @if (consultandoClima()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            Consultando clima... } @else {
+            <ion-icon name="cloudy-outline" slot="start" aria-hidden="true"></ion-icon>
+            Consultar clima }
+          </ion-button>
+        </div>
+
+        @if (clima(); as c) {
+        <div class="clima-reporte-caja" role="region" aria-label="Reporte meteorológico en tiempo real">
+          <div class="clima-reporte-header">
+            <div class="clima-icono-circulo">
+              <ion-icon [name]="c.icono" aria-hidden="true"></ion-icon>
+            </div>
+            <div class="clima-detalles-principales">
+              <span class="clima-estado-texto">{{ c.descripcion }}</span>
+              <span class="clima-fuente-nota">Servicio meteorológico Open-Meteo DMQ</span>
+            </div>
+          </div>
+
+          <div class="clima-metricas-fila">
+            <div class="clima-metrica-item">
+              <span class="metrica-etiqueta">Temperatura actual:</span>
+              <span class="metrica-valor">{{ c.temperatura }} °C</span>
+            </div>
+            <div class="clima-metrica-item">
+              <span class="metrica-etiqueta">Precipitación última hora:</span>
+              <span class="metrica-valor">{{ c.precipitacion }} mm/h</span>
+            </div>
+          </div>
+
+          <!-- ADVERTENCIA DE LLUVIA INTENSA > 5 mm/h (R4: NO BLOQUEANTE) -->
+          @if (c.alertaLluvia) {
+          <div class="alerta-lluvia-box" role="alert">
+            <ion-icon name="rainy-outline" class="alerta-lluvia-icono" aria-hidden="true"></ion-icon>
+            <div class="alerta-lluvia-contenido">
+              <strong>Aviso de lluvia intensa ({{ c.precipitacion }} mm/h):</strong>
+              <p>
+                La precipitación registrada supera los 5 mm/h y puede dificultar las labores de mantenimiento en vía
+                pública. Este aviso es preventivo y <strong>no bloquea</strong> el registro de la incidencia.
+              </p>
+            </div>
+          </div>
+          }
+        </div>
+        }
+
+        <!-- AVISO DE FALLO NO BLOQUEANTE (R4) -->
+        @if (errorClima()) {
+        <div class="aviso-clima-fallo" role="note">
+          <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+          <span>{{ errorClima() }}</span>
+        </div>
+        }
+      </div>
+
       <!-- CAMPO 7: EVIDENCIA FOTOGRÁFICA (R5 + R6) -->
       <div class="campo-grupo">
         <span class="campo-label" id="label-foto">

@@ -1180,6 +1180,127 @@
   color: #92400e;
 }
 
+.btn-clima {
+  --min-height: 36px;
+  min-height: 36px;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.clima-reporte-caja {
+  margin-top: 10px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clima-reporte-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.clima-icono-circulo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--ion-color-primary, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.clima-detalles-principales {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clima-estado-texto {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ion-color-dark, #0f172a);
+}
+
+.clima-fuente-nota {
+  font-size: 0.72rem;
+  color: var(--ion-color-medium, #64748b);
+}
+
+.clima-metricas-fila {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.clima-metrica-item {
+  flex: 1;
+  min-width: 140px;
+  background: var(--ion-card-background, #ffffff);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alerta-lluvia-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #92400e;
+  font-size: 0.84rem;
+}
+
+.alerta-lluvia-icono {
+  font-size: 1.4rem;
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alerta-lluvia-contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  p {
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+.aviso-clima-fallo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: rgba(100, 116, 139, 0.08);
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  border-radius: 6px;
+  color: var(--ion-color-dark, #1e293b);
+  font-size: 0.82rem;
+
+  ion-icon {
+    font-size: 1.3rem;
+    color: var(--ion-color-medium, #64748b);
+    flex-shrink: 0;
+  }
+}
+
 .subir-foto-caja {
   border: 2px dashed rgba(100, 116, 139, 0.35);
   border-radius: 10px;
@@ -1314,64 +1435,29 @@
     }
   }
 
-  .campo-label-fila {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.btn-gps {
-  --min-height: 36px;
-  min-height: 36px;
-  font-weight: 600;
-  font-size: 0.82rem;
-}
-
-.aviso-bache-coordenadas {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 6px;
-  color: #92400e;
-  font-size: 0.82rem;
-  margin: 4px 0;
-
-  ion-icon {
-    font-size: 1.2rem;
-    flex-shrink: 0;
+  .clima-reporte-caja {
+    background: rgba(96, 165, 250, 0.08);
+    border-color: rgba(96, 165, 250, 0.25);
   }
-}
 
-.coordenadas-inputs-fila {
-  display: flex;
-  gap: 10px;
-}
+  .clima-metrica-item {
+    background: #1e293b;
+    border-color: #475569;
+  }
 
-.coord-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+  .alerta-lluvia-box {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #fbbf24;
+  }
 
-.sublabel-coord {
-  font-size: 0.78rem;
-  color: var(--ion-color-medium, #64748b);
-  font-weight: 500;
-}
+  .aviso-clima-fallo {
+    background: rgba(148, 163, 184, 0.1);
+    border-color: rgba(148, 163, 184, 0.25);
+    color: #e2e8f0;
+  }
 
-.alerta-gps {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #92400e;
-}
-
-.subir-foto-caja {
+  .subir-foto-caja {
     background: rgba(255, 255, 255, 0.02);
     border-color: #475569;
   }
