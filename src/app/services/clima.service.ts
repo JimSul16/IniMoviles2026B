@@ -57,9 +57,22 @@ export class ClimaService {
     return this.http.get<OpenMeteoResponse>(this.apiUrl, { params }).pipe(
       map((res) => {
         const cur = res?.current;
-        const temperatura = cur?.temperature_2m ?? 16;
-        const precipitacion = cur?.precipitation ?? 0;
-        const codigoWmo = cur?.weather_code ?? 0;
+        if (
+          !cur ||
+          typeof cur.temperature_2m !== 'number' ||
+          isNaN(cur.temperature_2m) ||
+          typeof cur.precipitation !== 'number' ||
+          isNaN(cur.precipitation)
+        ) {
+          throw {
+            mensaje:
+              'Open-Meteo no devolvió datos válidos para esta ubicación. Puede continuar con el registro municipal.',
+          } as ErrorClima;
+        }
+
+        const temperatura = cur.temperature_2m;
+        const precipitacion = cur.precipitation;
+        const codigoWmo = typeof cur.weather_code === 'number' && !isNaN(cur.weather_code) ? cur.weather_code : 0;
         const { descripcion, icono } = this.traducirCodigoWmo(codigoWmo);
 
         return {
@@ -71,11 +84,13 @@ export class ClimaService {
           icono,
         };
       }),
-      catchError(() => {
+      catchError((err: unknown) => {
+        const errorClima = err as ErrorClima;
         return throwError(
           () =>
             ({
               mensaje:
+                errorClima?.mensaje ||
                 'No fue posible obtener el reporte meteorológico en tiempo real desde Open-Meteo. Puede continuar con el registro municipal.',
             }) satisfies ErrorClima,
         );

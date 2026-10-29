@@ -100,4 +100,23 @@ describe('ClimaService (R4)', () => {
     expect(errorCapturado).toBeDefined();
     expect(errorCapturado?.mensaje).toContain('Open-Meteo');
   });
+
+  it('lanza ErrorClima cuando la respuesta de Open-Meteo no contiene datos meteorológicos válidos (R4 sin datos inventados)', () => {
+    let errorCapturado: ErrorClima | undefined;
+
+    service.consultarClima().subscribe({
+      next: () => {
+        throw new Error('No debería responder éxito con respuesta incompleta');
+      },
+      error: (err: ErrorClima) => {
+        errorCapturado = err;
+      },
+    });
+
+    const req = httpTesting.expectOne((r) => r.url === environment.climaApiUrl);
+    req.flush({});
+
+    expect(errorCapturado).toBeDefined();
+    expect(errorCapturado?.mensaje).toContain('no devolvió datos válidos');
+  });
 });
