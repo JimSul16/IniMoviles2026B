@@ -169,7 +169,7 @@ Esto es lo que nos costó trabajo la vez pasada. Casi todo el PDF de la activida
 | A — PDF + plan + verificación de APIs | — | 🟦 MiMo | ✅ `259de6c` — plan completo y APIs verificadas en vivo |
 | B — Scaffold + estructura + rutas + deps + siembra de datos | base | 🟦 MiMo | ✅ BUILD verde · 26 incidencias sembradas |
 | C — Listado de incidencias (8 campos, vacío, error) | R2 | 🟪 Gemini | ✅ `a666ea2` — verificado: BUILD verde, 11/11 tests |
-| **C' — Arreglos desbloqueantes** (nav mínima desde inicio, tema oscuro, guard + token en la recarga) | refuerzo R2/R10 | 🟪 Gemini | ⬜ **prioritario**: sin nav no se puede demostrar R2 (hallazgo 🔴 de DeepSeek) |
+| **C' — Arreglos desbloqueantes** (nav mínima desde inicio, tema oscuro, guard + token en la recarga) | refuerzo R2/R10 | 🟪 Gemini | ✅ `502da3b` — verificado: BUILD verde, 16/16 tests, los 4 arreglos confirmados |
 | D — Paginación remota e incremental | R3 | 🟪 Gemini | ⬜ |
 | E — Detalle + transiciones de estado + observación | R9 | 🟪 Gemini | ⬜ |
 | F — Formulario de registro + validaciones | R5 | 🟪 Gemini | ⬜ |

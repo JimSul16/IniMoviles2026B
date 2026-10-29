@@ -244,6 +244,73 @@ Errores conocidos: ninguno.
 
 ---
 
+## Bloque #7 — 🟪 Gemini (fase C' cerrada: navegación, tema oscuro, guard/fuga, contraste y placeholders)
+
+```
+Fase completada: C' — arreglos desbloqueantes del listado y navegación (R2 + R10).
+Hecho:
+  1. Navegación e inicio: `src/app/pages/inicio/` con panel municipal hero, indicador de conteo real
+     conectado a `IncidenciasService` (ionViewWillEnter + signals) y 3 accesos con routerLink
+     a /incidencias, /registro y /seguimiento (targets táctiles >= 56 px).
+  2. Lifecycle: `listado.page.ts` implementa `ViewWillEnter` (ionViewWillEnter) para recargar datos
+     cuando `IonRouterOutlet` reactiva la vista tras un alta o actualización (R10).
+  3. Tema oscuro de alto contraste: tokens redefinidos en `@media (prefers-color-scheme: dark)`
+     dentro de `src/theme/variables.scss` (--ion-color-dark: #e2e8f0, --ion-color-medium: #94a3b8,
+     --ion-color-primary: #60a5fa, card-background: #1e293b), resolviendo la anulación por especificidad.
+  4. Contraste en modo claro: `.estado-pendiente` oscurecido a #92400e y `.estado-resuelta` a #166534;
+     `.foto-sin-evidencia` oscurecido a #334155 (todos > 4.5:1, WCAG AA estricto).
+  5. Carrera + fuga: guard síncrono `peticionEnVuelo`, `tokenGeneracion` para descartar respuestas
+     viejas, `takeUntilDestroyed(destroyRef)`, y skeleton visible solo en carga inicial o forzada.
+  6. Placeholders de desarrollo eliminados en `inicio`, `detalle`, `registro` y `seguimiento`.
+  7. Menores resueltos:
+      · `index.html`: lang="es", título "UrbanInspect", viewport sin user-scalable=no.
+      · `listado.page.ts`: validación `Array.isArray()`, enlace al detalle por tarjeta,
+        `onFotoError()` inmutable para fallback de imagen rota, lookup de `PRIORIDADES`.
+      · `listado.page.scss`: `:host { display: flex; flex-direction: column; }`.
+      · `incidencia.model.ts`: docstring actualizado (base64 data-URI en foto).
+      · Código muerto eliminado: `shapes.svg` borrado, iconos no usados eliminados y nuevos registrados.
+  8. Tests: 16 unit tests pasando (5 servicio + 7 listado + 3 inicio + 1 app) y 2/2 e2e Playwright.
+Siguiente: Fase D (R3 — carga progresiva remota e incremental con infinite scroll).
+Decisiones a respetar:
+  · Paginación remota con ?page=N y pageSize=10; hasMore = data.length === pageSize.
+  · complete() de ion-infinite-scroll siempre en finally.
+BUILD: verde (npm run build · npm run lint · test:unit 16/16 · test:e2e 2/2).
+Errores conocidos: ninguno.
+```
+
+---
+
+## Bloque #8 — 🟦 MiMo (verificación de la fase C')
+
+```
+Fase completada: verificación de C' (arreglos desbloqueantes).
+Hecho:
+  · verificador-build → BUILD: verde — build 0 warnings · tsc app+spec · lint --max-warnings 0 ·
+    test:unit 16/16 (5 servicio + 7 listado + 3 inicio + 1 app, sin skip/only) · test:e2e 2/2.
+  · Los 4 arreglos confirmados con evidencia:
+      a) Navegación ✅ — routerLink a /incidencias, /registro y /seguimiento en inicio.page.html:44,56,68;
+         se llega al listado con clics reales (no hace falta escribir URLs).
+      b) Tema oscuro ✅ — tokens en @media (prefers-color-scheme: dark) en variables.scss;
+         contraste calculado: 17,9:1 en claro y 11,9:1 en oscuro (WCAG AAA).
+      c) Carrera/fuga ✅ — guard síncrono `peticionEnVuelo` activo en listado.page.ts:74-77,
+         ANTES del subscribe de la línea 90 (trampa §3.4) + tokenGeneracion + takeUntilDestroyed.
+      d) Budgets ✅ — ningún .page.scss pasa de 2 kB warning / 4 kB error.
+  · Extras verificados: index.html con lang="es" y título "UrbanInspect"; shapes.svg eliminado
+    sin romper nada; iconos registrados = iconos usados.
+  · PLAN.md §4 actualizado: fase C' ✅ `502da3b`.
+Siguiente: 🟪 fase D (R3 — paginación remota e incremental).
+Decisiones a respetar:
+  · El SERVICIO ya parametriza page/limit: en D NO reescribirlo, solo consumirlo.
+  · Fin de datos por items.length === PAGE_SIZE (NO existe X-Total-Count).
+  · Concatenar al paginar, reemplazar solo al resetear; offset por lo recibido; Set de ids.
+BUILD: verde.
+Errores conocidos: ninguno. Quedan 🟡 menores de la revisión: e2e navega por URL (mejorarar en D/E),
+  fotos sembradas PNG 160×120 poco creíbles (🟠, fase de datos), clases genéricas .card-header en
+  global.scss con probabilidad de colisión en la fase E.
+```
+
+---
+
 ## Bloque #N — de <modelo> a <modelo>
 
 ```
