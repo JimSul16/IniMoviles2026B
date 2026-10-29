@@ -49,7 +49,7 @@ export class InicioPage implements ViewWillEnter {
 
     // Conteo y desglose de estados desde la API de oficina (R2 + R10)
     this.incidenciasService
-      .getIncidencias(1, 20)
+      .getIncidencias(1, 100)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {

@@ -58,10 +58,12 @@ describe('InicioPage (R10 — Indicadores reactivos y navegación)', () => {
     fixture.detectChanges();
 
     expect(component.cargandoIndicador()).toBe(false);
+    expect(mockIncidenciasService.getIncidencias).toHaveBeenCalledWith(1, 100);
     expect(component.totalIncidencias()).toBe(4);
     expect(component.pendientes()).toBe(2);
     expect(component.enProceso()).toBe(1);
     expect(component.resueltas()).toBe(1);
+    expect(component.pendientes() + component.enProceso() + component.resueltas()).toBe(4);
     expect(component.enSeguimiento()).toBe(2);
 
     const compiled = fixture.nativeElement as HTMLElement;
