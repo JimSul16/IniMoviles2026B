@@ -30,11 +30,54 @@
         } @else if (totalIncidencias() !== null) {
         <div class="indicador-valor-box">
           <span class="indicador-valor">{{ totalIncidencias() }}</span>
-          <span class="indicador-nota">(página 1 activa)</span>
+          <span class="indicador-nota">(inspecciones en curso)</span>
         </div>
         } @else {
         <span class="indicador-offline">Servidor no disponible</span>
         }
+      </div>
+    </section>
+
+    <!-- RESUMEN DE ESTADOS DE CAMPO (R10) -->
+    <section class="indicadores-subgrid" aria-label="Desglose de estados de infraestructura">
+      <div class="indicador-subitem sub-pendiente">
+        <div class="subitem-icono">
+          <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="subitem-info">
+          <span class="subitem-valor">{{ pendientes() }}</span>
+          <span class="subitem-label">Pendientes</span>
+        </div>
+      </div>
+
+      <div class="indicador-subitem sub-proceso">
+        <div class="subitem-icono">
+          <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="subitem-info">
+          <span class="subitem-valor">{{ enProceso() }}</span>
+          <span class="subitem-label">En proceso</span>
+        </div>
+      </div>
+
+      <div class="indicador-subitem sub-resuelta">
+        <div class="subitem-icono">
+          <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="subitem-info">
+          <span class="subitem-valor">{{ resueltas() }}</span>
+          <span class="subitem-label">Resueltas</span>
+        </div>
+      </div>
+
+      <div class="indicador-subitem sub-seguimiento">
+        <div class="subitem-icono">
+          <ion-icon name="bookmark" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="subitem-info">
+          <span class="subitem-valor">{{ enSeguimiento() }}</span>
+          <span class="subitem-label">Seguimiento</span>
+        </div>
       </div>
     </section>
 
@@ -71,7 +114,7 @@
         </div>
         <div class="acceso-info">
           <h2 class="acceso-titulo">Para seguimiento</h2>
-          <p class="acceso-desc">Consultar incidencias marcadas para seguimiento prioritario en el dispositivo.</p>
+          <p class="acceso-desc">Consultar incidencias marcadas para supervisión prioritaria en el dispositivo.</p>
         </div>
         <ion-icon name="chevron-forward-outline" class="acceso-flecha" aria-hidden="true"></ion-icon>
       </a>
