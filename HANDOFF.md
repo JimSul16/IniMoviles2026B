@@ -11,11 +11,11 @@
 | Campo | Valor |
 |---|---|
 | **Proyecto** | **UrbanInspect** — inspección de infraestructura urbana (requisitos en `PLAN.md` §0, rúbrica 12,8 funcional + 3,2 defensa) |
-| **Responsable ahora** | 🟪 **`gemini-ui`** — fase D (R3: carga progresiva e incremental) |
-| **Fase actual** | C' cerrada (desbloqueantes resueltos) · lista para fase D (R3) |
-| **BUILD** | ✅ **verde** — `npm run build` · `tsc` app+spec · `npm run lint` · `test:unit` **16/16** · `test:e2e` **2/2** |
-| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `fase-C': …` |
-| **🚦 Señal** | `FASE-C': commiteado — listo para fase D (R3: carga progresiva)` |
+| **Responsable ahora** | 🟪 **`gemini-ui`** — encadenando fases D a L |
+| **Fase actual** | D cerrada · iniciando fase E (R9: detalle y transiciones) |
+| **BUILD** | ✅ **verde** — `npm run build` · `npm run lint` · `test:unit` **16/16** · `test:e2e` **2/2** |
+| **Commits** | `61cf40e` · `1e09bba` · `259de6c` (A) · `7392ee7` (B) · `a666ea2` (C) · `502da3b` (C') · `fase-D: …` |
+| **🚦 Señal** | `FASE-D: commiteado — iniciando fase E (R9: detalle y transiciones)` |
 | **Errores conocidos** | · Recurso MockAPI llamado **`API`** (renombrable) → URL solo en `environments` · **Sin `X-Total-Count`** → fin por `items.length === PAGE_SIZE` · payload ≈100 KB → foto ≤ 70 KB base64 · budget SCSS real **2/4 kB** |
 
 ---
@@ -307,6 +307,30 @@ BUILD: verde.
 Errores conocidos: ninguno. Quedan 🟡 menores de la revisión: e2e navega por URL (mejorarar en D/E),
   fotos sembradas PNG 160×120 poco creíbles (🟠, fase de datos), clases genéricas .card-header en
   global.scss con probabilidad de colisión en la fase E.
+```
+
+---
+
+## Bloque #9 — 🟪 gemini-ui (fase D cerrada: carga progresiva e incremental R3)
+
+```
+Fase completada: D — paginación remota e incremental con infinite scroll (R3, 1,6 pts).
+Hecho:
+  1. Infinite Scroll: componente `ion-infinite-scroll` con spinner bubbles y texto accesible.
+  2. Paginación remota: consumo incremental con `page=N` y `pageSize=10` (no X-Total-Count).
+  3. Control de fin de datos: `hasMore = data.length === pageSize`. Detecta página corta (< 10)
+     e informa con aviso accesible "No hay más incidencias registradas · X de X cargadas".
+     Se previene totalmente la solicitud de páginas posteriores inexistentes.
+  4. Deduplicación y offsets: Set de ids (`idsCargados`) para evitar duplicaciones en caso
+     de desfase o solapamiento de datos en la API.
+  5. Manejo seguro de eventos: `complete()` llamado estrictamente en bloque `finally` para
+     evitar congelamiento del infinite scroll.
+  6. Error resiliente en scroll: si falla una página adicional (`errorCargaMas`), no se
+     destruye la lista previa y se ofrece botón de reintento explícito.
+  7. Tests: 7 tests unitarios en listado (incluye tests específicos de R3 para concatenación,
+     anti-duplicación y verificación de que la página 4 no se solicita).
+BUILD: verde (build 0 warnings, lint 0 warnings, 16 unit tests pasando, 2 e2e pasando).
+Siguiente: Fase E (R9 — detalle y transiciones de estado).
 ```
 
 ---

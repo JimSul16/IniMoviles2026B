@@ -468,8 +468,39 @@
 }
 
 /* ==========================================================================
-   ESTADOS VACÍO / ERROR
+   ESTADOS VACÍO / ERROR / PAGINACIÓN
    ========================================================================== */
+
+.fin-datos-aviso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  margin: 12px 0 24px 0;
+  background: var(--ion-card-background, #ffffff);
+  border: 1px dashed rgba(100, 116, 139, 0.25);
+  border-radius: 10px;
+  color: var(--ion-color-medium, #64748b);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.error-scroll-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px;
+  margin: 12px 0;
+  background: rgba(185, 28, 28, 0.08);
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  border-radius: 10px;
+  color: #b91c1c;
+  font-size: 0.85rem;
+  text-align: center;
+}
 
 .estado-box {
   display: flex;
@@ -588,7 +619,8 @@
   .incidencia-card,
   .hero-card,
   .indicador-panel,
-  .acceso-card {
+  .acceso-card,
+  .fin-datos-aviso {
     border-color: rgba(148, 163, 184, 0.2);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }

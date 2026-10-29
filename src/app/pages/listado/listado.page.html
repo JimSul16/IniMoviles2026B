@@ -200,6 +200,36 @@
         </article>
         }
       </div>
+
+      <!-- ERROR EN CARGA INCREMENTAL (SIN BORRAR LO YA CARGADO) -->
+      @if (errorCargaMas()) {
+      <div class="error-scroll-box" role="alert">
+        <span>{{ errorCargaMas() }}</span>
+        <ion-button (click)="cargarMas()" fill="outline" size="small" color="danger" class="accion-btn">
+          <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
+          Reintentar carga de página
+        </ion-button>
+      </div>
+      }
+
+      <!-- FIN DE DATOS (R3) -->
+      @if (!hasMore() && incidencias().length > 0) {
+      <div class="fin-datos-aviso" role="status">
+        <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+        <span
+          >No hay más incidencias registradas · {{ incidencias().length }} de {{ incidencias().length }} cargadas</span
+        >
+      </div>
+      }
+
+      <!-- INFINITE SCROLL INCREMENTAL (R3) -->
+      <ion-infinite-scroll
+        [disabled]="!hasMore() || cargandoMas() || estadoVisual() === 'error' || errorCargaMas() !== null"
+        (ionInfinite)="cargarMas($event)"
+      >
+        <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más incidencias de Quito...">
+        </ion-infinite-scroll-content>
+      </ion-infinite-scroll>
     </div>
     }
   </div>

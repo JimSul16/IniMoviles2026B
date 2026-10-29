@@ -9,6 +9,8 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   IonSkeletonText,
   IonTitle,
   IonToolbar,
@@ -21,11 +23,9 @@ import type { ErrorConsultaIncidencias } from '../../services/incidencias.servic
 import { IncidenciasService } from '../../services/incidencias.service';
 
 /**
- * Vista de consulta de incidencias (R2).
- * Muestra los 8 campos obligatorios por registro y maneja los 3 estados:
- * - Carga (esqueletos con formato real)
- * - Vacío (mensaje informativo sin error)
- * - Error con reintento (distingue caída de red de 404 o fallo de servidor)
+ * Vista de consulta de incidencias con paginación remota incremental (R2 + R3).
+ * Maneja los estados visuales (carga inicial, vacío, error, lista), y paginación
+ * fluida con ion-infinite-scroll, deduplicación mediante Set y corte por fin de datos.
  */
 @Component({
   selector: 'app-listado',
@@ -42,6 +42,8 @@ import { IncidenciasService } from '../../services/incidencias.service';
     IonButton,
     IonIcon,
     IonSkeletonText,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
     RouterLink,
   ],
 })
@@ -52,6 +54,15 @@ export class ListadoPage implements ViewWillEnter {
   readonly estadoVisual = signal<'cargando' | 'vacio' | 'error' | 'exito'>('cargando');
   readonly incidencias = signal<Incidencia[]>([]);
   readonly errorInfo = signal<ErrorConsultaIncidencias | null>(null);
+
+  /** Paginación remota (R3) */
+  readonly paginaActual = signal<number>(1);
+  readonly hasMore = signal<boolean>(true);
+  readonly cargandoMas = signal<boolean>(false);
+  readonly errorCargaMas = signal<string | null>(null);
+
+  /** Conjunto de IDs para deduplicación estricta y prevención de NG0955 */
+  private readonly idsCargados = new Set<string>();
 
   /** Evita múltiples peticiones simultáneas */
   private peticionEnVuelo = false;
@@ -67,7 +78,7 @@ export class ListadoPage implements ViewWillEnter {
   }
 
   /**
-   * Carga la primera página de incidencias desde MockAPI.
+   * Carga la primera página de incidencias desde MockAPI reseteando la paginación.
    * @param forzarEsqueleto Si es true, muestra los skeletons aunque ya existan datos.
    */
   cargarIncidencias(forzarEsqueleto = false): void {
@@ -81,6 +92,12 @@ export class ListadoPage implements ViewWillEnter {
       this.estadoVisual.set('cargando');
     }
     this.errorInfo.set(null);
+    this.errorCargaMas.set(null);
+
+    // Reinicio de paginación
+    this.paginaActual.set(1);
+    this.hasMore.set(true);
+    this.idsCargados.clear();
 
     const tokenActual = ++this.tokenGeneracion;
 
@@ -94,11 +111,25 @@ export class ListadoPage implements ViewWillEnter {
             return;
           }
           const registros = Array.isArray(data) ? data : [];
-          this.incidencias.set(registros);
+          const unicos: Incidencia[] = [];
+
+          for (const item of registros) {
+            const idStr = String(item.id);
+            if (!this.idsCargados.has(idStr)) {
+              this.idsCargados.add(idStr);
+              unicos.push(item);
+            }
+          }
+
+          this.incidencias.set(unicos);
+
+          // Si la primera página viene vacía o corta
           if (registros.length === 0) {
             this.estadoVisual.set('vacio');
+            this.hasMore.set(false);
           } else {
             this.estadoVisual.set('exito');
+            this.hasMore.set(registros.length === environment.pageSize);
           }
         },
         error: (err: ErrorConsultaIncidencias) => {
@@ -108,6 +139,70 @@ export class ListadoPage implements ViewWillEnter {
           }
           this.errorInfo.set(err);
           this.estadoVisual.set('error');
+        },
+      });
+  }
+
+  /**
+   * Carga la siguiente página incremental desde MockAPI y concatena a la lista existente (R3).
+   */
+  cargarMas(event?: { target: HTMLIonInfiniteScrollElement }): void {
+    // Si no hay más registros o hay una petición en curso, cerramos el evento de inmediato
+    if (!this.hasMore() || this.peticionEnVuelo || this.cargandoMas()) {
+      event?.target?.complete();
+      return;
+    }
+
+    this.cargandoMas.set(true);
+    this.errorCargaMas.set(null);
+    const siguientePagina = this.paginaActual() + 1;
+    const tokenActual = ++this.tokenGeneracion;
+
+    this.incidenciasService
+      .getIncidencias(siguientePagina, environment.pageSize)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          try {
+            if (tokenActual !== this.tokenGeneracion) {
+              return;
+            }
+            const registros = Array.isArray(data) ? data : [];
+            const nuevos: Incidencia[] = [];
+
+            for (const item of registros) {
+              const idStr = String(item.id);
+              if (!this.idsCargados.has(idStr)) {
+                this.idsCargados.add(idStr);
+                nuevos.push(item);
+              }
+            }
+
+            if (nuevos.length > 0) {
+              this.incidencias.update((prev) => [...prev, ...nuevos]);
+            }
+
+            this.paginaActual.set(siguientePagina);
+
+            // Fin real de datos cuando una página viene con menos elementos que el tamaño de página
+            if (registros.length < environment.pageSize) {
+              this.hasMore.set(false);
+            }
+          } finally {
+            this.cargandoMas.set(false);
+            event?.target?.complete();
+          }
+        },
+        error: (err: ErrorConsultaIncidencias) => {
+          try {
+            if (tokenActual !== this.tokenGeneracion) {
+              return;
+            }
+            this.errorCargaMas.set(err.mensaje || 'Error al cargar más incidencias.');
+          } finally {
+            this.cargandoMas.set(false);
+            event?.target?.complete();
+          }
         },
       });
   }
