@@ -439,10 +439,11 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
 
     const file = input.files[0];
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       if (typeof reader.result === 'string') {
-        this.asignarFoto(reader.result);
+        this.asignarFoto(await this.camaraService.asegurarLimiteTamanio(reader.result, 70));
       }
+      input.value = '';
     };
     reader.readAsDataURL(file);
   }

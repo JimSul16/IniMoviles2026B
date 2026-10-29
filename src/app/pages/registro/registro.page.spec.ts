@@ -21,6 +21,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
   };
   let mockCamaraService: {
     capturarFoto: ReturnType<typeof vi.fn>;
+    asegurarLimiteTamanio: ReturnType<typeof vi.fn>;
   };
   let mockUbicacionService: {
     obtenerPosicionActual: ReturnType<typeof vi.fn>;
@@ -56,6 +57,7 @@ describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
     };
     mockCamaraService = {
       capturarFoto: vi.fn(),
+      asegurarLimiteTamanio: vi.fn().mockImplementation(async (f: string) => f),
     };
     mockUbicacionService = {
       obtenerPosicionActual: vi.fn(),
@@ -230,6 +232,28 @@ describe('RegistroPage (R5 + R6 + R7 + R8 + R4)', () => {
     const img = compiled.querySelector('.foto-previa-img') as HTMLImageElement;
     expect(img).toBeTruthy();
     expect(img.src).toContain('data:image/jpeg;base64,evidencianueva');
+  });
+
+  it('al seleccionar una imagen de galería la comprime con asegurarLimiteTamanio para evitar 413 (R5/R6)', async () => {
+    mockCamaraService.asegurarLimiteTamanio.mockResolvedValue('data:image/jpeg;base64,optimizada70kb');
+
+    const fakeFile = new Blob(['contenido de imagen de prueba'], { type: 'image/jpeg' });
+    const fakeInput = {
+      files: [fakeFile],
+      value: 'C:\\fakepath\\foto.jpg',
+    } as unknown as HTMLInputElement;
+
+    const fakeEvent = {
+      target: fakeInput,
+    } as unknown as Event;
+
+    component.onFileSelected(fakeEvent);
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(mockCamaraService.asegurarLimiteTamanio).toHaveBeenCalledWith(expect.any(String), 70);
+    expect(component.foto()).toBe('data:image/jpeg;base64,optimizada70kb');
+    expect(fakeInput.value).toBe('');
   });
 
   it('cancelar la captura de foto deja los datos del formulario intactos (R6)', async () => {
