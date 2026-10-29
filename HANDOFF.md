@@ -206,6 +206,10 @@ modelado, cero any/console.log, tests reales con HttpTestingController, identida
 Informe completo disponible en la sesión del subagente revisor-rubrica.
 ```
 
+---
+
+## Bloque #N — de <modelo> a <modelo>
+
 ```
 Fase completada: ...
 Hecho: ...
