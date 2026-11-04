@@ -24,6 +24,7 @@
 > Conforme a las instrucciones del docente para la revisión de la Prueba I:
 > 1. **Conservación de la evidencia original:** La versión entregada en la evaluación se preserva intacta e inmutable con el tag `evaluacion-original` (commit `fa9c130`).
 > 2. **Rama independiente:** Todas las correcciones, la integración de Cloudinary y el rediseño de usabilidad se desarrollaron sobre la rama `correccion-mejoras`.
+> 3. **Parte Teórica Corregida:** Se incluye el documento PDF formal con la corrección y fundamentación exhaustiva de las 10 preguntas en [`Correccion_Evaluacion_Teorica_Prueba_I.pdf`](./Correccion_Evaluacion_Teorica_Prueba_I.pdf) y [`docs/Correccion_Evaluacion_Teorica_Prueba_I.pdf`](./docs/Correccion_Evaluacion_Teorica_Prueba_I.pdf).
 
 ### 🌟 Mejoras Implementadas en esta Rama
 
