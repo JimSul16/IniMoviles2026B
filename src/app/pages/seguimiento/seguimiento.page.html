@@ -109,15 +109,24 @@
           @if (item.foto) {
           <div class="foto-box">
             <img
-              [src]="item.foto"
+              [src]="obtenerFotoOptimizada(item.foto)"
               [alt]="'Evidencia fotográfica de incidencia ' + codigoDe(item)"
               class="foto-img"
               loading="lazy"
               (error)="onFotoError(item.id)"
             />
-            <div class="foto-etiqueta">
-              <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
-              <span>Evidencia fotográfica</span>
+            <div class="foto-etiqueta-bar">
+              @if (esUrlCloudinary(item.foto)) {
+              <span class="badge-cloudinary" title="Fotografía almacenada en Cloudinary CDN">
+                <ion-icon name="cloud-done-outline" aria-hidden="true"></ion-icon>
+                Cloudinary CDN
+              </span>
+              } @else {
+              <span class="badge-foto-local">
+                <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+                Evidencia fotográfica
+              </span>
+              }
             </div>
           </div>
           } @else {

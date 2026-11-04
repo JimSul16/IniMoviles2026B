@@ -13,7 +13,88 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="listado-content">
+  <ion-refresher slot="fixed" (ionRefresh)="refrescar($event)">
+    <ion-refresher-content pullingIcon="chevron-down-circle-outline" refreshingSpinner="crescent">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <div class="contenedor-principal">
+    <!-- FILTROS Y BÚSQUEDA INTERACTIVA (USABILIDAD Y ORGANIZACIÓN) -->
+    <div class="panel-filtros-inspeccion">
+      <ion-searchbar
+        [ngModel]="terminoBusqueda()"
+        (ngModelChange)="terminoBusqueda.set($event)"
+        placeholder="Buscar por código, sector o descripción..."
+        [debounce]="150"
+        class="buscador-inspeccion"
+        aria-label="Buscar incidencias"
+      ></ion-searchbar>
+
+      <div class="chips-filtros-scroll" role="tablist" aria-label="Filtrar por estado">
+        <button
+          type="button"
+          class="chip-filtro"
+          [class.activo]="filtroEstado() === 'todos'"
+          (click)="filtroEstado.set('todos')"
+        >
+          Todos
+        </button>
+        <button
+          type="button"
+          class="chip-filtro chip-pendiente"
+          [class.activo]="filtroEstado() === 'pendiente'"
+          (click)="filtroEstado.set('pendiente')"
+        >
+          <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+          Pendientes
+        </button>
+        <button
+          type="button"
+          class="chip-filtro chip-proceso"
+          [class.activo]="filtroEstado() === 'en_proceso'"
+          (click)="filtroEstado.set('en_proceso')"
+        >
+          <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
+          En Proceso
+        </button>
+        <button
+          type="button"
+          class="chip-filtro chip-resuelta"
+          [class.activo]="filtroEstado() === 'resuelta'"
+          (click)="filtroEstado.set('resuelta')"
+        >
+          <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+          Resueltas
+        </button>
+      </div>
+
+      <div
+        class="chips-filtros-scroll chips-secundarios"
+        role="tablist"
+        aria-label="Filtrar por tipo de infraestructura"
+      >
+        <button
+          type="button"
+          class="chip-filtro chip-sub"
+          [class.activo]="filtroTipo() === 'todos'"
+          (click)="filtroTipo.set('todos')"
+        >
+          Todas las obras
+        </button>
+        @for (t of tipos; track t.valor) {
+        <button
+          type="button"
+          class="chip-filtro chip-sub"
+          [class.activo]="filtroTipo() === t.valor"
+          (click)="filtroTipo.set(t.valor)"
+        >
+          <ion-icon [name]="t.icono" aria-hidden="true"></ion-icon>
+          {{ t.etiqueta }}
+        </button>
+        }
+      </div>
+    </div>
+
     <!-- ESTADO 1: CARGA (SKELETON SHIMMER) -->
     @if (estadoVisual() === 'cargando') {
     <div class="skeleton-list" aria-busy="true" aria-label="Cargando incidencias">
@@ -90,15 +171,34 @@
       <!-- Barra informativa de contexto municipal -->
       <div class="cabecera-inspeccion" aria-live="polite">
         <div class="conteo-badge">
-          <span class="conteo-num">{{ incidencias().length }}</span>
-          <span class="conteo-label">incidencias cargadas</span>
+          <span class="conteo-num">{{ incidenciasFiltradas().length }}</span>
+          <span class="conteo-label">
+            @if (incidenciasFiltradas().length !== incidencias().length) { de {{ incidencias().length }} cargadas
+            (filtradas) } @else { incidencias cargadas }
+          </span>
         </div>
         <span class="inspeccion-tag">Municipio DMQ · Inspección de campo</span>
       </div>
 
+      @if (incidenciasFiltradas().length === 0) {
+      <div class="estado-box estado-sin-filtros" role="status">
+        <div class="icono-circulo vacio">
+          <ion-icon name="search-outline" class="estado-icon" aria-hidden="true"></ion-icon>
+        </div>
+        <h2 class="estado-titulo">Sin resultados coincidentes</h2>
+        <p class="estado-descripcion">
+          No se encontraron incidencias que coincidan con la búsqueda o los filtros seleccionados.
+        </p>
+        <ion-button (click)="limpiarFiltros()" fill="outline" color="primary" class="accion-btn">
+          <ion-icon name="close-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+          Limpiar todos los filtros
+        </ion-button>
+      </div>
+      }
+
       <!-- Tarjetas de incidencias -->
       <div class="cards-grid">
-        @for (item of incidencias(); track item.id) {
+        @for (item of incidenciasFiltradas(); track item.id) {
         <article class="incidencia-card" [attr.data-id]="item.id">
           <!-- 1. CÓDIGO Y ESTADO (CABECERA) -->
           <header class="card-header">
@@ -130,19 +230,28 @@
             </div>
           </header>
 
-          <!-- 8. FOTOGRAFÍA SI EXISTE (CON FALLBACK EXPLÍCITO Y ERROR HANDLER) -->
+          <!-- 8. FOTOGRAFÍA SI EXISTE (CON OPTIMIZACIÓN CLOUDINARY Y FALLBACK) -->
           @if (item.foto) {
           <div class="foto-box">
             <img
-              [src]="item.foto"
+              [src]="obtenerFotoOptimizada(item.foto)"
               [alt]="'Evidencia fotográfica de incidencia ' + codigoDe(item)"
               class="foto-img"
               loading="lazy"
               (error)="onFotoError(item.id)"
             />
-            <div class="foto-etiqueta">
-              <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
-              <span>Evidencia fotográfica</span>
+            <div class="foto-etiqueta-bar">
+              @if (esUrlCloudinary(item.foto)) {
+              <span class="badge-cloudinary" title="Fotografía almacenada en Cloudinary CDN">
+                <ion-icon name="cloud-done-outline" aria-hidden="true"></ion-icon>
+                Cloudinary CDN
+              </span>
+              } @else {
+              <span class="badge-foto-local">
+                <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+                Evidencia local
+              </span>
+              }
             </div>
           </div>
           } @else {

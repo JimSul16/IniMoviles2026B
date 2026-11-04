@@ -24,6 +24,7 @@ import type {
   TipoIncidencia,
 } from '../../models/incidencia.model';
 import { codigoDe, ESTADOS, PRIORIDADES, SIGUIENTE_ESTADO, TIPOS } from '../../models/incidencia.model';
+import { CloudinaryService } from '../../services/cloudinary.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 import { SeguimientoService } from '../../services/seguimiento.service';
@@ -63,6 +64,7 @@ import { SeguimientoService } from '../../services/seguimiento.service';
 export class DetallePage implements ViewWillEnter {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly seguimientoService = inject(SeguimientoService);
+  private readonly cloudinaryService = inject(CloudinaryService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef, { optional: true });
 
@@ -264,5 +266,21 @@ export class DetallePage implements ViewWillEnter {
     if (item) {
       await this.seguimientoService.alternarSeguimiento(item.id);
     }
+  }
+
+  esUrlCloudinary(url: string | null | undefined): boolean {
+    return this.cloudinaryService.esUrlCloudinary(url);
+  }
+
+  obtenerFotoOptimizada(url: string | null | undefined): string {
+    return this.cloudinaryService.obtenerUrlOptimizada(url, { width: 800, height: 500 });
+  }
+
+  obtenerUrlGoogleMaps(): string {
+    const item = this.incidencia();
+    if (item?.lat && item?.lon) {
+      return `https://www.google.com/maps?q=${item.lat},${item.lon}`;
+    }
+    return '';
   }
 }

@@ -94,17 +94,67 @@
         </h1>
       </header>
 
-      <!-- FOTOGRAFÍA DE EVIDENCIA (CAMPO 8) -->
+      <!-- LÍNEA DE TIEMPO DEL ESTADO MUNICIPAL (WORKFLOW VISUAL) -->
+      <div class="stepper-estados" role="region" aria-label="Progreso de resolución">
+        <div class="step-item" [class.completado]="true" [class.actual]="incidencia()!.estado === 'pendiente'">
+          <div class="step-punto">
+            <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+          </div>
+          <span class="step-label">Pendiente</span>
+        </div>
+        <div
+          class="step-linea"
+          [class.activa]="incidencia()!.estado === 'en_proceso' || incidencia()!.estado === 'resuelta'"
+        ></div>
+        <div
+          class="step-item"
+          [class.completado]="incidencia()!.estado === 'en_proceso' || incidencia()!.estado === 'resuelta'"
+          [class.actual]="incidencia()!.estado === 'en_proceso'"
+        >
+          <div class="step-punto">
+            <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
+          </div>
+          <span class="step-label">En Proceso</span>
+        </div>
+        <div class="step-linea" [class.activa]="incidencia()!.estado === 'resuelta'"></div>
+        <div
+          class="step-item"
+          [class.completado]="incidencia()!.estado === 'resuelta'"
+          [class.actual]="incidencia()!.estado === 'resuelta'"
+        >
+          <div class="step-punto">
+            <ion-icon name="checkmark-done-outline" aria-hidden="true"></ion-icon>
+          </div>
+          <span class="step-label">Resuelta</span>
+        </div>
+      </div>
+
+      <!-- FOTOGRAFÍA DE EVIDENCIA (CAMPO 8 - CLOUDINARY R6) -->
       <section class="detalle-seccion-foto" aria-label="Evidencia fotográfica">
-        <h2 class="seccion-subtitulo">Evidencia fotográfica</h2>
+        <div class="seccion-subtitulo-fila">
+          <h2 class="seccion-subtitulo">Evidencia fotográfica</h2>
+          @if (incidencia()!.foto && esUrlCloudinary(incidencia()!.foto)) {
+          <span class="badge-cloudinary-pill">
+            <ion-icon name="cloud-done-outline" aria-hidden="true"></ion-icon>
+            Cloudinary CDN
+          </span>
+          }
+        </div>
+
         @if (incidencia()!.foto && !fotoRota()) {
         <div class="detalle-foto-marco">
           <img
-            [src]="incidencia()!.foto"
+            [src]="obtenerFotoOptimizada(incidencia()!.foto)"
             alt="Fotografía de evidencia en campo para la incidencia {{ obtenerCodigo() }}"
             class="detalle-foto-img"
             (error)="fotoRota.set(true)"
           />
+          <div class="foto-acciones-overlay">
+            <a [href]="incidencia()!.foto" target="_blank" rel="noopener noreferrer" class="btn-ver-hd">
+              <ion-icon name="expand-outline" aria-hidden="true"></ion-icon>
+              <span>Ver en alta resolución</span>
+            </a>
+          </div>
         </div>
         } @else {
         <div class="foto-sin-evidencia" role="status">
@@ -151,12 +201,22 @@
           </div>
 
           @if (incidencia()!.lat && incidencia()!.lon) {
-          <div class="dato-fila">
+          <div class="dato-fila dato-fila-gps">
             <ion-icon name="navigate-outline" class="dato-icono" aria-hidden="true"></ion-icon>
             <div class="dato-cuerpo">
               <span class="dato-etiqueta">Coordenadas GPS</span>
               <span class="dato-valor">{{ incidencia()!.lat }}, {{ incidencia()!.lon }}</span>
             </div>
+            <a
+              [href]="obtenerUrlGoogleMaps()"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-gps-mapa"
+              aria-label="Abrir ubicación en Google Maps"
+            >
+              <ion-icon name="map-outline" aria-hidden="true"></ion-icon>
+              <span>Ver mapa</span>
+            </a>
           </div>
           }
         </div>

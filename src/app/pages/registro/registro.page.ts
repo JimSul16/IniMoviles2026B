@@ -132,6 +132,8 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
   // Estados de validación, envío y borrador (R8)
   readonly errores = signal<ErroresFormulario>({});
   readonly enviando = signal<boolean>(false);
+  readonly subiendoACloudinary = signal<boolean>(false);
+  readonly estadoCloudinary = signal<'inactivo' | 'subiendo' | 'exito' | 'respaldo'>('inactivo');
   readonly capturandoFoto = signal<boolean>(false);
   readonly obteniendoGps = signal<boolean>(false);
   readonly borradorPendiente = signal<BorradorRegistro | null>(null);
@@ -367,13 +369,20 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
     // R6: Subida a Cloudinary con fallback a Base64 como respaldo
     let urlFoto = this.foto() || null;
     if (urlFoto && urlFoto.startsWith('data:image')) {
+      this.subiendoACloudinary.set(true);
+      this.estadoCloudinary.set('subiendo');
       try {
         const cloudUrl = await this.cloudinaryService.subirImagen(urlFoto);
         if (cloudUrl) {
           urlFoto = cloudUrl;
+          this.estadoCloudinary.set('exito');
+        } else {
+          this.estadoCloudinary.set('respaldo');
         }
       } catch {
-        // En caso de fallo o timeout de Cloudinary, se conserva el Base64 como respaldo
+        this.estadoCloudinary.set('respaldo');
+      } finally {
+        this.subiendoACloudinary.set(false);
       }
     }
 
@@ -434,6 +443,8 @@ export class RegistroPage implements ViewWillEnter, ViewWillLeave {
     this.clima.set(null);
     this.errorClima.set(null);
     this.climaConsultado.set(false);
+    this.estadoCloudinary.set('inactivo');
+    this.subiendoACloudinary.set(false);
   }
 
   asignarFoto(fotoData: string): void {

@@ -17,6 +17,7 @@ import { firstValueFrom } from 'rxjs';
 
 import type { EstadoIncidencia, Incidencia, PrioridadIncidencia, TipoIncidencia } from '../../models/incidencia.model';
 import { codigoDe, ESTADOS, PRIORIDADES, TIPOS } from '../../models/incidencia.model';
+import { CloudinaryService } from '../../services/cloudinary.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 import { SeguimientoService } from '../../services/seguimiento.service';
 
@@ -51,6 +52,7 @@ export type EstadoVistaSeguimiento = 'cargando' | 'vacio' | 'error' | 'exito';
 export class SeguimientoPage implements ViewWillEnter {
   private readonly seguimientoService = inject(SeguimientoService);
   private readonly incidenciasService = inject(IncidenciasService);
+  private readonly cloudinaryService = inject(CloudinaryService);
   private readonly router = inject(Router);
 
   readonly estado = signal<EstadoVistaSeguimiento>('cargando');
@@ -156,5 +158,25 @@ export class SeguimientoPage implements ViewWillEnter {
   onFotoError(id: string | number): void {
     // Si la foto en base64 o URL falla, oculta la foto defectuosa
     this.incidencias.update((items) => items.map((it) => (String(it.id) === String(id) ? { ...it, foto: null } : it)));
+  }
+
+  formatearFecha(fechaIso: string): string {
+    if (!fechaIso) return 'Fecha no registrada';
+    const d = new Date(fechaIso);
+    if (isNaN(d.getTime())) return fechaIso;
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const anio = d.getFullYear();
+    const hora = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${anio} · ${hora}:${min}`;
+  }
+
+  esUrlCloudinary(url: string | null | undefined): boolean {
+    return this.cloudinaryService.esUrlCloudinary(url);
+  }
+
+  obtenerFotoOptimizada(url: string | null | undefined): string {
+    return this.cloudinaryService.obtenerUrlOptimizada(url, { width: 440, height: 280 });
   }
 }

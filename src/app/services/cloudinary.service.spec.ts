@@ -63,4 +63,25 @@ describe('CloudinaryService', () => {
     const resultado = await promesa;
     expect(resultado).toBeNull();
   });
+
+  it('detecta URLs de Cloudinary correctamente con esUrlCloudinary', () => {
+    expect(service.esUrlCloudinary('https://res.cloudinary.com/btmr3o2b/image/upload/v1/test.png')).toBe(true);
+    expect(service.esUrlCloudinary('https://ejemplo.com/foto.jpg')).toBe(false);
+    expect(service.esUrlCloudinary(null)).toBe(false);
+    expect(service.esUrlCloudinary(undefined)).toBe(false);
+  });
+
+  it('aplica transformaciones a URLs de Cloudinary con obtenerUrlOptimizada', () => {
+    const original = 'https://res.cloudinary.com/btmr3o2b/image/upload/v1793801802/foto.png';
+    const optimizada = service.obtenerUrlOptimizada(original, { width: 300, height: 200 });
+
+    expect(optimizada).toBe(
+      'https://res.cloudinary.com/btmr3o2b/image/upload/c_fill,w_300,h_200,q_auto,f_auto/v1793801802/foto.png',
+    );
+  });
+
+  it('no modifica URLs externas en obtenerUrlOptimizada', () => {
+    const externa = 'https://ejemplo.com/foto.png';
+    expect(service.obtenerUrlOptimizada(externa)).toBe(externa);
+  });
 });

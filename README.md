@@ -9,11 +9,37 @@
     <img src="https://img.shields.io/badge/Capacitor_8-119EFF?style=for-the-badge&logo=capacitor&logoColor=white" alt="Capacitor" />
     <img src="https://img.shields.io/badge/TypeScript_6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/API-MockAPI%20%2B%20Open--Meteo%20%2B%20Cloudinary-F05032?style=for-the-badge&logo=insomnia&logoColor=white" alt="APIs" />
-    <img src="https://img.shields.io/badge/Tests-97%2F97-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Tests" />
+    <img src="https://img.shields.io/badge/Tests-100%2F100-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Tests" />
+    <img src="https://img.shields.io/badge/Rama-correccion--mejoras-0284c7?style=for-the-badge&logo=git&logoColor=white" alt="Branch" />
+    <img src="https://img.shields.io/badge/Cloudinary-CDN_Integrado-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white" alt="Cloudinary" />
     <img src="https://img.shields.io/badge/Auditoría-0_vulns-3DDC84?style=for-the-badge&logoColor=white" alt="Auditoría" />
     <img src="https://img.shields.io/badge/Aplicación_Móvil-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
   </p>
 </div>
+
+---
+
+## 🚀 Rama de Corrección y Mejoras (`correccion-mejoras`)
+
+> Conforme a las instrucciones del docente para la revisión de la Prueba I:
+> 1. **Conservación de la evidencia original:** La versión entregada en la evaluación se preserva intacta e inmutable con el tag `evaluacion-original` (commit `fa9c130`).
+> 2. **Rama independiente:** Todas las correcciones, la integración de Cloudinary y el rediseño de usabilidad se desarrollaron sobre la rama `correccion-mejoras`.
+
+### 🌟 Mejoras Implementadas en esta Rama
+
+#### 1. Integración Completa de Cloudinary (CDN de Alta Disponibilidad)
+- **Subida firmada con SHA-1 nativo:** `CloudinaryService` calcula la firma criptográfica requerida por Cloudinary usando la Web Crypto API (`crypto.subtle.digest`) para uploads seguros sin exponer el secreto.
+- **Transformaciones automáticas en vuelo (`f_auto, q_auto`):** Las miniaturas del listado y de seguimiento consumen transformaciones de Cloudinary (`c_fill,w_440,h_280,q_auto,f_auto`), reduciendo el consumo de megabytes y acelerando la velocidad de carga en redes móviles de campo.
+- **Badges y visor en alta definición:** Tarjetas y pantalla de detalle muestran el distintivo `☁️ Cloudinary CDN` y permiten abrir la imagen original en alta definición en una pestaña o visor externo.
+- **Tolerancia a fallos y fallback:** Si Cloudinary experimenta cortes o el dispositivo pierde conectividad, el servicio recurre de forma transparente al respaldo en Base64 comprimido (≤ 70 KB), impidiendo la pérdida del reporte.
+
+#### 2. Rediseño Visual, Organización y Usabilidad
+- **Buscador y filtros en tiempo real:** Barra de búsqueda en vivo (`ion-searchbar`) por código (`INC-xxx`), sector o descripción, combinada con chips de filtro interactivo por **Estado** (Todos, Pendiente, En proceso, Resuelta) y por **Tipo de infraestructura** (Luminarias, Baches, Señalización, Alcantarillas, Parques).
+- **Línea de tiempo visual (Stepper) en Detalle:** Flujo gráfico del ciclo de vida (`Pendiente` ➔ `En Proceso` ➔ `Resuelta`) con indicación visual del estado actual.
+- **Acceso directo interactivo en Inicio:** Los indicadores de estado (Pendientes, En Proceso, Resueltas, Seguimiento) ahora funcionan como accesos directos clickeables con filtros automáticos.
+- **Georreferenciación con apertura en Mapas:** Enlace directo a Google Maps / Waze cuando el reporte contiene coordenadas GPS válidas.
+- **Pull-to-refresh (`ion-refresher`):** Deslizamiento hacia abajo para refrescar las incidencias en caliente.
+- **100 pruebas unitarias en verde:** 100/100 tests pasando con Vitest, linter sin advertencias y formateo estricto con Prettier.
 
 ---
 

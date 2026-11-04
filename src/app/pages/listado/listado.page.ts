@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ViewWillEnter } from '@ionic/angular';
 import {
   IonBackButton,
@@ -11,6 +12,9 @@ import {
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonSearchbar,
   IonSkeletonText,
   IonTitle,
   IonToolbar,
@@ -19,14 +23,14 @@ import {
 import { environment } from '../../../environments/environment';
 import type { EstadoIncidencia, Incidencia, PrioridadIncidencia, TipoIncidencia } from '../../models/incidencia.model';
 import { codigoDe, ESTADOS, PRIORIDADES, TIPOS } from '../../models/incidencia.model';
+import { CloudinaryService } from '../../services/cloudinary.service';
 import type { ErrorConsultaIncidencias } from '../../services/incidencias.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 import { SeguimientoService } from '../../services/seguimiento.service';
 
 /**
- * Vista de consulta de incidencias con paginación remota incremental (R2 + R3).
- * Maneja los estados visuales (carga inicial, vacío, error, lista), y paginación
- * fluida con ion-infinite-scroll, deduplicación mediante Set y corte por fin de datos.
+ * Vista de consulta de incidencias con paginación remota incremental (R2 + R3)
+ * y herramientas avanzadas de organización en campo (búsqueda en vivo, filtrado y optimización CDN).
  */
 @Component({
   selector: 'app-listado',
@@ -34,6 +38,7 @@ import { SeguimientoService } from '../../services/seguimiento.service';
   styleUrls: ['./listado.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    FormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -42,6 +47,9 @@ import { SeguimientoService } from '../../services/seguimiento.service';
     IonBackButton,
     IonButton,
     IonIcon,
+    IonSearchbar,
+    IonRefresher,
+    IonRefresherContent,
     IonSkeletonText,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
@@ -51,11 +59,56 @@ import { SeguimientoService } from '../../services/seguimiento.service';
 export class ListadoPage implements ViewWillEnter {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly seguimientoService = inject(SeguimientoService);
+  private readonly cloudinaryService = inject(CloudinaryService);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly estadoVisual = signal<'cargando' | 'vacio' | 'error' | 'exito'>('cargando');
   readonly incidencias = signal<Incidencia[]>([]);
   readonly errorInfo = signal<ErrorConsultaIncidencias | null>(null);
+
+  /** Filtros y búsqueda interactiva en campo */
+  readonly terminoBusqueda = signal<string>('');
+  readonly filtroTipo = signal<string>('todos');
+  readonly filtroEstado = signal<string>('todos');
+  readonly filtroPrioridad = signal<string>('todos');
+
+  readonly tipos = TIPOS;
+  readonly estados = ESTADOS;
+  readonly prioridades = PRIORIDADES;
+
+  /** Lista reactiva filtrada en memoria sobre el buffer cargado */
+  readonly incidenciasFiltradas = computed(() => {
+    let items = this.incidencias();
+    const termino = this.terminoBusqueda().trim().toLowerCase();
+    const tipo = this.filtroTipo();
+    const estado = this.filtroEstado();
+    const prioridad = this.filtroPrioridad();
+
+    if (termino) {
+      items = items.filter(
+        (i) =>
+          codigoDe(i).toLowerCase().includes(termino) ||
+          i.descripcion.toLowerCase().includes(termino) ||
+          i.direccion.toLowerCase().includes(termino) ||
+          i.sector.toLowerCase().includes(termino),
+      );
+    }
+
+    if (tipo !== 'todos') {
+      items = items.filter((i) => i.tipo === tipo);
+    }
+
+    if (estado !== 'todos') {
+      items = items.filter((i) => i.estado === estado);
+    }
+
+    if (prioridad !== 'todos') {
+      items = items.filter((i) => i.prioridad === prioridad);
+    }
+
+    return items;
+  });
 
   /** Paginación remota (R3) */
   readonly paginaActual = signal<number>(1);
@@ -76,9 +129,40 @@ export class ListadoPage implements ViewWillEnter {
    * garantizando que los datos se refresquen tras un registro o actualización (R10).
    */
   ionViewWillEnter(): void {
+    const estadoParam = this.route.snapshot.queryParamMap.get('estado');
+    if (estadoParam && ['pendiente', 'en_proceso', 'resuelta'].includes(estadoParam)) {
+      this.filtroEstado.set(estadoParam);
+    }
+
     if (this.incidencias().length === 0 || this.incidenciasService.consumirNuevaIncidencia?.()) {
       this.cargarIncidencias();
     }
+  }
+
+  /**
+   * Manejador de pull-to-refresh para recargar la lista de campo.
+   */
+  async refrescar(event: CustomEvent): Promise<void> {
+    this.cargarIncidencias(true);
+    // Esperar a que concluya la recarga
+    setTimeout(() => {
+      (event.target as HTMLIonRefresherElement)?.complete();
+    }, 600);
+  }
+
+  limpiarFiltros(): void {
+    this.terminoBusqueda.set('');
+    this.filtroTipo.set('todos');
+    this.filtroEstado.set('todos');
+    this.filtroPrioridad.set('todos');
+  }
+
+  esUrlCloudinary(url: string | null | undefined): boolean {
+    return this.cloudinaryService.esUrlCloudinary(url);
+  }
+
+  obtenerFotoOptimizada(url: string | null | undefined): string {
+    return this.cloudinaryService.obtenerUrlOptimizada(url, { width: 440, height: 280 });
   }
 
   /**

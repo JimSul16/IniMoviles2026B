@@ -38,9 +38,15 @@
       </div>
     </section>
 
-    <!-- RESUMEN DE ESTADOS DE CAMPO (R10) -->
+    <!-- RESUMEN DE ESTADOS DE CAMPO (R10 CON ACCESO DIRECTO INTERACTIVO) -->
     <section class="indicadores-subgrid" aria-label="Desglose de estados de infraestructura">
-      <div class="indicador-subitem sub-pendiente">
+      <a
+        [routerLink]="['/incidencias']"
+        [queryParams]="{ estado: 'pendiente' }"
+        class="indicador-subitem sub-pendiente"
+        role="button"
+        aria-label="Ver incidencias pendientes"
+      >
         <div class="subitem-icono">
           <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
         </div>
@@ -48,9 +54,15 @@
           <span class="subitem-valor">{{ pendientes() }}</span>
           <span class="subitem-label">Pendientes</span>
         </div>
-      </div>
+      </a>
 
-      <div class="indicador-subitem sub-proceso">
+      <a
+        [routerLink]="['/incidencias']"
+        [queryParams]="{ estado: 'en_proceso' }"
+        class="indicador-subitem sub-proceso"
+        role="button"
+        aria-label="Ver incidencias en proceso"
+      >
         <div class="subitem-icono">
           <ion-icon name="construct-outline" aria-hidden="true"></ion-icon>
         </div>
@@ -58,9 +70,15 @@
           <span class="subitem-valor">{{ enProceso() }}</span>
           <span class="subitem-label">En proceso</span>
         </div>
-      </div>
+      </a>
 
-      <div class="indicador-subitem sub-resuelta">
+      <a
+        [routerLink]="['/incidencias']"
+        [queryParams]="{ estado: 'resuelta' }"
+        class="indicador-subitem sub-resuelta"
+        role="button"
+        aria-label="Ver incidencias resueltas"
+      >
         <div class="subitem-icono">
           <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
         </div>
@@ -68,9 +86,14 @@
           <span class="subitem-valor">{{ resueltas() }}</span>
           <span class="subitem-label">Resueltas</span>
         </div>
-      </div>
+      </a>
 
-      <div class="indicador-subitem sub-seguimiento">
+      <a
+        routerLink="/seguimiento"
+        class="indicador-subitem sub-seguimiento"
+        role="button"
+        aria-label="Ver incidencias en seguimiento"
+      >
         <div class="subitem-icono">
           <ion-icon name="bookmark" aria-hidden="true"></ion-icon>
         </div>
@@ -78,7 +101,7 @@
           <span class="subitem-valor">{{ enSeguimiento() }}</span>
           <span class="subitem-label">Seguimiento</span>
         </div>
-      </div>
+      </a>
     </section>
 
     <!-- ACCESOS PRINCIPALES DE NAVEGACIÓN (TARGETS >= 44 PX) -->

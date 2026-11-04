@@ -42,6 +42,39 @@ export class CloudinaryService {
   }
 
   /**
+   * Determina si una URL pertenece al CDN de Cloudinary.
+   */
+  esUrlCloudinary(url: string | null | undefined): boolean {
+    if (!url || typeof url !== 'string') {
+      return false;
+    }
+    return url.includes('cloudinary.com') || url.includes('res.cloudinary.com');
+  }
+
+  /**
+   * Genera una URL con transformaciones automáticas de Cloudinary (formato y calidad óptimos f_auto,q_auto,
+   * y redimensionamiento responsivo) para acelerar la carga en redes móviles y ahorrar datos al inspector.
+   */
+  obtenerUrlOptimizada(
+    url: string | null | undefined,
+    opciones?: { width?: number; height?: number; crop?: string; quality?: string },
+  ): string {
+    if (!url || !this.esUrlCloudinary(url)) {
+      return url || '';
+    }
+
+    const { width = 400, height = 300, crop = 'fill', quality = 'auto' } = opciones ?? {};
+    const transformaciones = `c_${crop},w_${width},h_${height},q_${quality},f_auto`;
+
+    // Si la URL ya contiene transformaciones de subida, evitar duplicar
+    if (url.includes('/image/upload/c_')) {
+      return url;
+    }
+
+    return url.replace('/image/upload/', `/image/upload/${transformaciones}/`);
+  }
+
+  /**
    * Sube una imagen en formato data-URI a Cloudinary y retorna la secure_url.
    * Si la subida falla o supera el tiempo límite, retorna null para activar el respaldo en Base64.
    */

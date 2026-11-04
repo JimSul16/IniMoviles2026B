@@ -320,11 +320,17 @@
 
         @if (foto()) {
         <div class="foto-previa-caja">
+          <div class="foto-previa-badge-bar">
+            <span class="badge-cloudinary-preview">
+              <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
+              Almacenamiento Cloudinary CDN
+            </span>
+          </div>
           <img [src]="foto()" alt="Previsualización de la evidencia fotográfica" class="foto-previa-img" />
           <div class="foto-previa-acciones">
             <ion-button
               (click)="tomarFotoConCamara()"
-              [disabled]="capturandoFoto()"
+              [disabled]="capturandoFoto() || enviando()"
               color="medium"
               fill="outline"
               size="small"
@@ -333,7 +339,14 @@
               <ion-icon name="camera-outline" slot="start" aria-hidden="true"></ion-icon>
               Repetir foto
             </ion-button>
-            <ion-button (click)="eliminarFoto()" color="danger" fill="outline" size="small" class="accion-btn">
+            <ion-button
+              (click)="eliminarFoto()"
+              [disabled]="enviando()"
+              color="danger"
+              fill="outline"
+              size="small"
+              class="accion-btn"
+            >
               <ion-icon name="trash-outline" slot="start" aria-hidden="true"></ion-icon>
               Quitar foto
             </ion-button>
@@ -397,7 +410,9 @@
           expand="block"
           class="accion-btn btn-guardar-principal"
         >
-          @if (enviando()) {
+          @if (subiendoACloudinary()) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+          Subiendo fotografía a Cloudinary CDN... } @else if (enviando()) {
           <ion-spinner name="crescent" slot="start"></ion-spinner>
           Guardando en la API municipal... } @else {
           <ion-icon name="save-outline" slot="start" aria-hidden="true"></ion-icon>
