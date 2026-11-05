@@ -1992,3 +1992,305 @@
 .estado-sin-filtros {
   margin-top: 16px;
 }
+
+/* ==========================================================================
+   URBANINSPECT — ESTILOS DE AUTENTICACIÓN (FIREBASE AUTH & LOGIN INSTITUCIONAL)
+   ========================================================================== */
+
+.login-content {
+  --background: #f8fafc;
+}
+
+.login-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 1rem 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.login-hero {
+  text-align: center;
+  padding: 0.5rem 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .hero-insignia {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1d4ed8, #0d9488);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2rem;
+    box-shadow: 0 8px 18px rgba(29, 78, 216, 0.22);
+    margin-bottom: 0.6rem;
+  }
+
+  .muni-subtitle {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #1d4ed8;
+    background: #dbeafe;
+    padding: 0.15rem 0.65rem;
+    border-radius: 9999px;
+    margin-bottom: 0.4rem;
+  }
+
+  .login-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 0.25rem;
+  }
+
+  .login-tagline {
+    font-size: 0.9rem;
+    color: #475569;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+.modo-segment {
+  --background: #e2e8f0;
+  border-radius: 10px;
+  padding: 3px;
+
+  ion-segment-button {
+    --color: #475569;
+    --color-checked: #1d4ed8;
+    --indicator-color: #fff;
+    font-weight: 600;
+    min-height: 40px;
+  }
+}
+
+.alerta-box {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+
+  ion-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  &.alerta-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  &.alerta-exito {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+}
+
+.form-card {
+  margin: 0;
+  border-radius: 14px;
+  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.05);
+  border: 1px solid #e2e8f0;
+  background: #fff;
+
+  ion-card-header {
+    padding-bottom: 0.4rem;
+
+    ion-card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    ion-card-subtitle {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+
+  .campo-auth {
+    .custom-item {
+      --background: #f8fafc;
+      --border-radius: 8px;
+      --border-color: #cbd5e1;
+      --highlight-color-focused: #1d4ed8;
+
+      ion-icon[slot='start'] {
+        color: #1d4ed8;
+        font-size: 1.2rem;
+        margin-inline-end: 0.5rem;
+      }
+    }
+
+    .btn-ver-clave {
+      --color: #64748b;
+      min-width: 40px;
+      min-height: 40px;
+    }
+  }
+
+  .submit-btn {
+    margin-top: 0.4rem;
+    min-height: 46px;
+    font-weight: 700;
+    --border-radius: 8px;
+  }
+}
+
+.demo-section .demo-card {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 1rem;
+
+  .demo-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+
+    .demo-icono {
+      font-size: 1.35rem;
+      color: #d97706;
+      background: #fef3c7;
+      padding: 6px;
+      border-radius: 8px;
+    }
+
+    .demo-titulo {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .demo-desc {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+
+  .demo-botones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .demo-btn {
+      min-height: 42px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      --border-radius: 8px;
+    }
+  }
+}
+
+.login-footer {
+  text-align: center;
+  padding: 0.75rem 0;
+  color: #64748b;
+  font-size: 0.8rem;
+
+  p {
+    margin: 0 0 0.2rem;
+    font-weight: 600;
+  }
+
+  .auth-tecnologia {
+    font-size: 0.74rem;
+    color: #94a3b8;
+  }
+}
+
+.inspector-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+
+  .inspector-avatar {
+    font-size: 2.2rem;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .inspector-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+
+    .inspector-nombre-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+      .inspector-nombre {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #0f172a;
+      }
+
+      .inspector-badge {
+        font-size: 0.72rem;
+        font-weight: 600;
+        background: #dbeafe;
+        color: #1d4ed8;
+        padding: 0.1rem 0.45rem;
+        border-radius: 6px;
+      }
+    }
+
+    .inspector-email {
+      font-size: 0.8rem;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .inspector-departamento {
+      font-size: 0.75rem;
+      color: #0d9488;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .inspector-logout-btn {
+    --padding-start: 6px;
+    --padding-end: 6px;
+    min-width: 38px;
+    min-height: 38px;
+    margin: 0;
+  }
+}

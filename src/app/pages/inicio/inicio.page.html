@@ -1,11 +1,46 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
     <ion-title>UrbanInspect</ion-title>
+    @if (usuarioActual()) {
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrarSesion()" fill="clear" color="light" aria-label="Cerrar sesión de inspector">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="inicio-content">
   <div class="contenedor-principal">
+    <!-- SESIÓN ACTIVA DEL INSPECTOR (FIREBASE AUTH) -->
+    @if (usuarioActual(); as usr) {
+    <section class="inspector-card" aria-label="Sesión de inspector activa">
+      <div class="inspector-avatar">
+        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+      </div>
+      <div class="inspector-info">
+        <div class="inspector-nombre-box">
+          <span class="inspector-nombre">{{ usr.displayName }}</span>
+          <span class="inspector-badge">{{ usr.rol | titlecase }}</span>
+        </div>
+        <span class="inspector-email">{{ usr.email }}</span>
+        @if (usr.departamento) {
+        <span class="inspector-departamento">{{ usr.departamento }}</span>
+        }
+      </div>
+      <ion-button
+        (click)="cerrarSesion()"
+        fill="clear"
+        color="medium"
+        class="inspector-logout-btn"
+        aria-label="Cerrar sesión"
+      >
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </section>
+    }
+
     <!-- HERO MUNICIPAL -->
     <section class="hero-card">
       <div class="hero-escudo">

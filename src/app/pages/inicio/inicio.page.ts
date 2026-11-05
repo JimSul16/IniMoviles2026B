@@ -1,9 +1,20 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import type { ViewWillEnter } from '@ionic/angular';
-import { IonContent, IonHeader, IonIcon, IonSkeletonText, IonTitle, IonToolbar } from '@ionic/angular';
+import {
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonSkeletonText,
+  IonTitle,
+  IonToolbar,
+} from '@ionic/angular';
 
+import { AuthService } from '../../services/auth.service';
 import { IncidenciasService } from '../../services/incidencias.service';
 import { SeguimientoService } from '../../services/seguimiento.service';
 
@@ -21,12 +32,27 @@ import { SeguimientoService } from '../../services/seguimiento.service';
   templateUrl: './inicio.page.html',
   styleUrls: ['./inicio.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonIcon, IonSkeletonText, RouterLink],
+  imports: [
+    TitleCasePipe,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonIcon,
+    IonSkeletonText,
+    RouterLink,
+  ],
 })
 export class InicioPage implements ViewWillEnter {
   private readonly incidenciasService = inject(IncidenciasService);
   private readonly seguimientoService = inject(SeguimientoService);
+  private readonly authService = inject(AuthService, { optional: true });
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly usuarioActual = computed(() => this.authService?.currentUser() ?? null);
 
   readonly cargandoIndicador = signal<boolean>(true);
   readonly totalIncidencias = signal<number | null>(null);
@@ -37,6 +63,13 @@ export class InicioPage implements ViewWillEnter {
 
   ionViewWillEnter(): void {
     this.cargarIndicadores();
+  }
+
+  async cerrarSesion(): Promise<void> {
+    if (this.authService) {
+      await this.authService.logout();
+    }
+    void this.router.navigateByUrl('/login');
   }
 
   cargarIndicadores(): void {

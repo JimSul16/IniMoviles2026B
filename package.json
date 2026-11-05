@@ -7,6 +7,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "deploy": "npm run build:prod && firebase deploy --only hosting",
     "watch": "ng build --watch --configuration development",
     "lint": "npm run eslint && npm run typecheck:e2e && npm run prettier -- --check",
     "lint:fix": "npm run eslint -- --fix && npm run prettier -- --write",
@@ -32,6 +34,7 @@
     "@capacitor/geolocation": "^8.2.4",
     "@capacitor/preferences": "^8.0.1",
     "@ionic/angular": "^9.0.0",
+    "firebase": "^13.2.0",
     "ionicons": "^8.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

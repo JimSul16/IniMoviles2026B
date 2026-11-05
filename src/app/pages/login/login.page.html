@@ -1,0 +1,258 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>UrbanInspect · DMQ</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="login-content ion-padding">
+  <div class="login-container">
+    <!-- HERO INSTITUCIONAL -->
+    <header class="login-hero">
+      <div class="hero-insignia" aria-hidden="true">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+      </div>
+      <span class="muni-subtitle">Distrito Metropolitano de Quito</span>
+      <h1 class="login-title">UrbanInspect</h1>
+      <p class="login-tagline">
+        Plataforma oficial de fiscalización e inspección técnica de infraestructura urbana de campo.
+      </p>
+    </header>
+
+    <!-- SELECTOR DE MODO (LOGIN / REGISTRO) -->
+    <ion-segment [value]="modo()" (ionChange)="cambiarModo($any($event).detail.value)" class="modo-segment">
+      <ion-segment-button value="login">
+        <ion-label>Iniciar Sesión</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="registro">
+        <ion-label>Nuevo Inspector</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- MENSAJES DE ERROR / ÉXITO -->
+    @if (errorLocal()) {
+    <div class="alerta-box alerta-error" role="alert">
+      <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      <span>{{ errorLocal() }}</span>
+    </div>
+    } @if (exitoRegistro()) {
+    <div class="alerta-box alerta-exito" role="status">
+      <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+      <span>{{ exitoRegistro() }}</span>
+    </div>
+    }
+
+    <!-- FORMULARIO DE INICIO DE SESIÓN -->
+    @if (modo() === 'login') {
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>Ingreso Institucional</ion-card-title>
+        <ion-card-subtitle>Ingrese sus credenciales de fiscalizador o inspector</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form (ngSubmit)="onLoginSubmit()" class="auth-form" novalidate>
+          <div class="campo-auth">
+            <ion-item lines="inset" class="custom-item">
+              <ion-icon name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
+              <ion-input
+                type="email"
+                label="Correo electrónico municipal (*)"
+                labelPlacement="floating"
+                placeholder="inspector@quito.gob.ec"
+                [value]="email()"
+                (ionInput)="email.set($any($event).detail.value || '')"
+                required
+                autocomplete="email"
+              ></ion-input>
+            </ion-item>
+          </div>
+
+          <div class="campo-auth">
+            <ion-item lines="inset" class="custom-item">
+              <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+              <ion-input
+                [type]="mostrarPassword() ? 'text' : 'password'"
+                label="Contraseña (*)"
+                labelPlacement="floating"
+                placeholder="Ingrese su contraseña"
+                [value]="password()"
+                (ionInput)="password.set($any($event).detail.value || '')"
+                required
+                autocomplete="current-password"
+              ></ion-input>
+              <ion-button
+                fill="clear"
+                slot="end"
+                (click)="toggleMostrarPassword()"
+                class="btn-ver-clave"
+                aria-label="Alternar visibilidad de contraseña"
+              >
+                <ion-icon [name]="mostrarPassword() ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </div>
+
+          <ion-button
+            type="submit"
+            expand="block"
+            color="primary"
+            class="submit-btn"
+            [disabled]="authService.cargando()"
+          >
+            @if (authService.cargando()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            <span>Verificando credenciales...</span>
+            } @else {
+            <ion-icon name="log-in-outline" slot="start" aria-hidden="true"></ion-icon>
+            <span>Ingresar al Sistema</span>
+            }
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- PANEL DE ACCESO RÁPIDO PARA EVALUACIÓN TÉCNICA -->
+    <section class="demo-section" aria-label="Acceso Rápido de Evaluación">
+      <div class="demo-card">
+        <div class="demo-header">
+          <ion-icon name="key-outline" class="demo-icono" aria-hidden="true"></ion-icon>
+          <div>
+            <h2 class="demo-titulo">Acceso Rápido de Campo</h2>
+            <p class="demo-desc">Credenciales preconfiguradas para revisión académica y evaluación técnica:</p>
+          </div>
+        </div>
+
+        <div class="demo-botones">
+          <ion-button
+            expand="block"
+            fill="outline"
+            color="primary"
+            (click)="accesoRapido('inspector')"
+            [disabled]="authService.cargando()"
+            class="demo-btn"
+          >
+            <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+            <span>Inspector: Ing. Juan Carlos Morales (EPMMOP)</span>
+          </ion-button>
+
+          <ion-button
+            expand="block"
+            fill="outline"
+            color="secondary"
+            (click)="accesoRapido('supervisor')"
+            [disabled]="authService.cargando()"
+            class="demo-btn"
+          >
+            <ion-icon name="person-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+            <span>Supervisora: Arq. María Elena Salazar</span>
+          </ion-button>
+        </div>
+      </div>
+    </section>
+    }
+
+    <!-- FORMULARIO DE REGISTRO DE INSPECTOR -->
+    @if (modo() === 'registro') {
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>Alta de Inspector</ion-card-title>
+        <ion-card-subtitle>Cree una cuenta para emitir y gestionar reportes de campo</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form (ngSubmit)="onRegistroSubmit()" class="auth-form" novalidate>
+          <div class="campo-auth">
+            <ion-item lines="inset" class="custom-item">
+              <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+              <ion-input
+                type="text"
+                label="Nombre y Apellido (*)"
+                labelPlacement="floating"
+                placeholder="Ej. Ing. Daniel Romero"
+                [value]="displayName()"
+                (ionInput)="displayName.set($any($event).detail.value || '')"
+                required
+              ></ion-input>
+            </ion-item>
+          </div>
+
+          <div class="campo-auth">
+            <ion-item lines="inset" class="custom-item">
+              <ion-icon name="business-outline" slot="start" aria-hidden="true"></ion-icon>
+              <ion-input
+                type="text"
+                label="Dependencia Municipal (*)"
+                labelPlacement="floating"
+                placeholder="Ej. EPMMOP / AMC / EPMAPS"
+                [value]="departamento()"
+                (ionInput)="departamento.set($any($event).detail.value || '')"
+              ></ion-input>
+            </ion-item>
+          </div>
+
+          <div class="campo-auth">
+            <ion-item lines="inset" class="custom-item">
+              <ion-icon name="mail-outline" slot="start" aria-hidden="true"></ion-icon>
+              <ion-input
+                type="email"
+                label="Correo Electrónico (*)"
+                labelPlacement="floating"
+                placeholder="ejemplo@quito.gob.ec"
+                [value]="email()"
+                (ionInput)="email.set($any($event).detail.value || '')"
+                required
+              ></ion-input>
+            </ion-item>
+          </div>
+
+          <div class="campo-auth">
+            <ion-item lines="inset" class="custom-item">
+              <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+              <ion-input
+                [type]="mostrarPassword() ? 'text' : 'password'"
+                label="Contraseña (mínimo 6 caracteres) (*)"
+                labelPlacement="floating"
+                placeholder="Cree una clave segura"
+                [value]="password()"
+                (ionInput)="password.set($any($event).detail.value || '')"
+                required
+              ></ion-input>
+              <ion-button
+                fill="clear"
+                slot="end"
+                (click)="toggleMostrarPassword()"
+                class="btn-ver-clave"
+                aria-label="Alternar visibilidad de contraseña"
+              >
+                <ion-icon [name]="mostrarPassword() ? 'eye-off-outline' : 'eye-outline'" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </div>
+
+          <ion-button
+            type="submit"
+            expand="block"
+            color="primary"
+            class="submit-btn"
+            [disabled]="authService.cargando()"
+          >
+            @if (authService.cargando()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            <span>Registrando inspector...</span>
+            } @else {
+            <ion-icon name="shield-checkmark-outline" slot="start" aria-hidden="true"></ion-icon>
+            <span>Crear Cuenta de Inspector</span>
+            }
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+    }
+
+    <!-- PIE INSTITUCIONAL -->
+    <footer class="login-footer">
+      <p>Municipio del Distrito Metropolitano de Quito · EPMMOP</p>
+      <span class="auth-tecnologia">Autenticación Firebase Auth & Alojamiento Firebase Hosting</span>
+    </footer>
+  </div>
+</ion-content>
