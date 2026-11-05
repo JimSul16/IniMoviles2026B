@@ -30,6 +30,6 @@ export const environment = {
     projectId: 'munapp-f43a2',
     storageBucket: 'munapp-f43a2.firebasestorage.app',
     messagingSenderId: '103144544635',
-    appId: '1:103144544635:web:2147047f67559f8f5985de',
+    appId: '1:103144544635:web:e5c16ec26cbffdab5985de',
   },
 };
