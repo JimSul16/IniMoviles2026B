@@ -25,11 +25,11 @@ export const environment = {
 
   /** Configuración de Firebase para Authentication y Hosting */
   firebase: {
-    apiKey: 'AIzaSyUrbanInspectQuitoKey2026MuniAPI',
-    authDomain: 'urbaninspect-quito.firebaseapp.com',
-    projectId: 'urbaninspect-quito',
-    storageBucket: 'urbaninspect-quito.firebasestorage.app',
-    messagingSenderId: '109876543210',
-    appId: '1:109876543210:web:9876543210abcdef',
+    apiKey: 'AIzaSyBflptnU8DSIWJeFJr7oKrFqyj_xVgbAG8',
+    authDomain: 'munapp-f43a2.firebaseapp.com',
+    projectId: 'munapp-f43a2',
+    storageBucket: 'munapp-f43a2.firebasestorage.app',
+    messagingSenderId: '103144544635',
+    appId: '1:103144544635:web:2147047f67559f8f5985de',
   },
 };

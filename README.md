@@ -9,13 +9,33 @@
     <img src="https://img.shields.io/badge/Capacitor_8-119EFF?style=for-the-badge&logo=capacitor&logoColor=white" alt="Capacitor" />
     <img src="https://img.shields.io/badge/TypeScript_6-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/API-MockAPI%20%2B%20Open--Meteo%20%2B%20Cloudinary-F05032?style=for-the-badge&logo=insomnia&logoColor=white" alt="APIs" />
-    <img src="https://img.shields.io/badge/Tests-100%2F100-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Tests" />
-    <img src="https://img.shields.io/badge/Rama-correccion--mejoras-0284c7?style=for-the-badge&logo=git&logoColor=white" alt="Branch" />
+    <img src="https://img.shields.io/badge/Firebase_Hosting-munapp--f43a2.web.app-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase Hosting" />
+    <img src="https://img.shields.io/badge/Firebase_Auth-Integrado-FFA000?style=for-the-badge&logo=firebase&logoColor=white" alt="Firebase Auth" />
+    <img src="https://img.shields.io/badge/Tests-118%2F118-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Tests" />
+    <img src="https://img.shields.io/badge/Rama-firebase--hosting--login-0284c7?style=for-the-badge&logo=git&logoColor=white" alt="Branch" />
     <img src="https://img.shields.io/badge/Cloudinary-CDN_Integrado-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white" alt="Cloudinary" />
     <img src="https://img.shields.io/badge/Auditoría-0_vulns-3DDC84?style=for-the-badge&logoColor=white" alt="Auditoría" />
     <img src="https://img.shields.io/badge/Aplicación_Móvil-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
   </p>
 </div>
+
+---
+
+## 🌐 Despliegue en Vivo — Firebase Hosting & Autenticación
+
+> **URL Oficial del Proyecto Desplegado:**  
+> 👉 **[https://munapp-f43a2.web.app](https://munapp-f43a2.web.app)**  
+> *(URL Alternativa: [https://munapp-f43a2.firebaseapp.com](https://munapp-f43a2.firebaseapp.com))*
+
+### 🔐 Inicio de Sesión (Firebase Authentication)
+El proyecto cuenta con control de acceso institucional y protección de rutas mediante `authGuard`:
+- **Pantalla de Acceso Oficial:** `/login` con diseño adaptado al Distrito Metropolitano de Quito y alto contraste para inspección en campo.
+- **Credenciales Demo Preconfiguradas para Evaluación (Acceso con 1 Clic):**
+  - **Inspector de Campo (EPMMOP):** `inspector@quito.gob.ec` / `Quito2026!`
+  - **Supervisora Técnica (Fiscalización):** `supervisor@quito.gob.ec` / `Quito2026!`
+- **Registro de Nuevos Inspectores:** Pestaña interactiva para dar de alta inspectores con nombre, dependencia y correo institucional.
+- **Persistencia de Sesión:** Integrada con `@capacitor/preferences` para mantener la sesión activa entre reinicios de la app y recargas del navegador.
+- **Cierre de Sesión:** Botón de desautenticación en la barra de usuario en la pantalla de inicio con confirmación.
 
 ---
 
